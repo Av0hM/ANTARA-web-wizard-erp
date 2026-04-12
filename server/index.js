@@ -744,7 +744,56 @@ app.use(
   }),
 );
 
+// app.use((req, res, next) => {
+//   const origin = normalizeOrigin(req.headers.origin ?? "");
+//   const allowAll = allowedOrigins.has("*");
+//   const isAllowed = !origin || allowAll || allowedOrigins.has(origin);
+
+//   if (origin && isAllowed) {
+//     res.setHeader("Access-Control-Allow-Origin", origin);
+//     res.setHeader("Vary", "Origin");
+//     res.setHeader(
+//       "Access-Control-Allow-Headers",
+//       "Content-Type, Authorization",
+//     );
+//     res.setHeader(
+//       "Access-Control-Allow-Methods",
+//       "GET,POST,PUT,DELETE,OPTIONS",
+//     );
+//     res.setHeader("Access-Control-Allow-Credentials", "true");
+//   }
+
+//   if (req.method === "OPTIONS") {
+//     if (!isAllowed) {
+//       res.status(403).json({ error: "Origin not allowed." });
+//       return;
+//     }
+//     res.status(204).end();
+//     return;
+//   }
+
+//   if (origin && !isAllowed) {
+//     res.status(403).json({ error: "Origin not allowed." });
+//     return;
+//   }
+//   next();
+// });
 app.use((req, res, next) => {
+  // ✅ IMPORTANT: allow frontend static files
+  if (
+    req.path.startsWith("/assets") ||
+    req.path.startsWith("/uploads") ||
+    req.path === "/" ||
+    req.path.endsWith(".js") ||
+    req.path.endsWith(".css") ||
+    req.path.endsWith(".png") ||
+    req.path.endsWith(".jpg") ||
+    req.path.endsWith(".webp") ||
+    req.path.endsWith(".svg")
+  ) {
+    return next();
+  }
+
   const origin = normalizeOrigin(req.headers.origin ?? "");
   const allowAll = allowedOrigins.has("*");
   const isAllowed = !origin || allowAll || allowedOrigins.has(origin);
@@ -765,17 +814,15 @@ app.use((req, res, next) => {
 
   if (req.method === "OPTIONS") {
     if (!isAllowed) {
-      res.status(403).json({ error: "Origin not allowed." });
-      return;
+      return res.status(403).json({ error: "Origin not allowed." });
     }
-    res.status(204).end();
-    return;
+    return res.status(204).end();
   }
 
   if (origin && !isAllowed) {
-    res.status(403).json({ error: "Origin not allowed." });
-    return;
+    return res.status(403).json({ error: "Origin not allowed." });
   }
+
   next();
 });
 
@@ -1072,11 +1119,9 @@ app.post(
 
     const requestedSlugRaw = sanitizeText(req.body.slug, 160).toLowerCase();
     if (requestedSlugRaw && !isValidSlug(requestedSlugRaw)) {
-      res
-        .status(400)
-        .json({
-          error: "Slug must be lowercase letters, numbers, and hyphens only.",
-        });
+      res.status(400).json({
+        error: "Slug must be lowercase letters, numbers, and hyphens only.",
+      });
       return;
     }
 
@@ -1160,11 +1205,9 @@ app.put(
       ? sanitizeText(req.body.slug, 160).toLowerCase()
       : existing.slug;
     if (!requestedSlugRaw || !isValidSlug(requestedSlugRaw)) {
-      res
-        .status(400)
-        .json({
-          error: "Slug must be lowercase letters, numbers, and hyphens only.",
-        });
+      res.status(400).json({
+        error: "Slug must be lowercase letters, numbers, and hyphens only.",
+      });
       return;
     }
     if (
@@ -1524,11 +1567,9 @@ const port = Number(process.env.PORT ?? 8787);
 app.use((error, _req, res, _next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
-      res
-        .status(413)
-        .json({
-          error: `Upload exceeds maximum allowed size (${UPLOAD_MAX_MB}MB).`,
-        });
+      res.status(413).json({
+        error: `Upload exceeds maximum allowed size (${UPLOAD_MAX_MB}MB).`,
+      });
       return;
     }
     res.status(400).json({ error: error.message });
