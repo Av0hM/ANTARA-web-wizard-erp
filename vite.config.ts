@@ -11,4 +11,8 @@ export default defineConfig({
       "/sitemap.xml": "http://localhost:8787",
     },
   },
+  base: "/",
+  build: {
+    outDir: "dist",
+  },
 });

@@ -9,7 +9,11 @@ import { fileURLToPath } from "node:url";
 import { createReadStream } from "node:fs";
 import { Pool } from "pg";
 import sharp from "sharp";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { createClient as createRedisClient } from "redis";
 import pino from "pino";
 import pinoHttp from "pino-http";
@@ -24,31 +28,43 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "change-me";
 const AUTH_SECRET = process.env.AUTH_SECRET ?? "change-this-secret";
 const TOKEN_TTL_HOURS = Number(process.env.TOKEN_TTL_HOURS ?? 12);
-const TOKEN_TTL_MS = Number.isFinite(TOKEN_TTL_HOURS) ? TOKEN_TTL_HOURS * 60 * 60 * 1000 : 12 * 60 * 60 * 1000;
+const TOKEN_TTL_MS = Number.isFinite(TOKEN_TTL_HOURS)
+  ? TOKEN_TTL_HOURS * 60 * 60 * 1000
+  : 12 * 60 * 60 * 1000;
 const DATABASE_URL = process.env.DATABASE_URL ?? "";
 const PGSSL = String(process.env.PGSSL ?? "false") === "true";
 const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60_000);
 const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX ?? 100);
 const UPLOAD_MAX_MB = Number(process.env.UPLOAD_MAX_MB ?? 5);
-const UPLOAD_MAX_BYTES = (Number.isFinite(UPLOAD_MAX_MB) ? Math.max(1, UPLOAD_MAX_MB) : 5) * 1024 * 1024;
+const UPLOAD_MAX_BYTES =
+  (Number.isFinite(UPLOAD_MAX_MB) ? Math.max(1, UPLOAD_MAX_MB) : 5) *
+  1024 *
+  1024;
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS ?? 30_000);
-const RAW_UPLOAD_PUBLIC_BASE_URL = process.env.UPLOAD_PUBLIC_BASE_URL ?? process.env.CDN_BASE_URL ?? "";
+const RAW_UPLOAD_PUBLIC_BASE_URL =
+  process.env.UPLOAD_PUBLIC_BASE_URL ?? process.env.CDN_BASE_URL ?? "";
 const REDIS_URL = process.env.REDIS_URL ?? "";
-const UPLOAD_STORAGE = String(process.env.UPLOAD_STORAGE ?? "local").trim().toLowerCase();
+const UPLOAD_STORAGE = String(process.env.UPLOAD_STORAGE ?? "local")
+  .trim()
+  .toLowerCase();
 const S3_BUCKET = process.env.S3_BUCKET ?? "";
 const S3_REGION = process.env.S3_REGION ?? "us-east-1";
 const S3_ENDPOINT = process.env.S3_ENDPOINT ?? "";
-const S3_FORCE_PATH_STYLE = String(process.env.S3_FORCE_PATH_STYLE ?? "false") === "true";
+const S3_FORCE_PATH_STYLE =
+  String(process.env.S3_FORCE_PATH_STYLE ?? "false") === "true";
 const S3_PUBLIC_BASE_URL = process.env.S3_PUBLIC_BASE_URL ?? "";
 const LOG_LEVEL = process.env.LOG_LEVEL ?? "info";
 const BACKUP_DIR = process.env.BACKUP_DIR ?? path.join(rootDir, "backups");
 const BACKUP_ENABLED = String(process.env.BACKUP_ENABLED ?? "true") !== "false";
 const BACKUP_INTERVAL_MS = Number(process.env.BACKUP_INTERVAL_MS ?? 86_400_000);
 const BACKUP_RETENTION_DAYS = Number(process.env.BACKUP_RETENTION_DAYS ?? 14);
-const BACKUP_INCLUDE_UPLOADS = String(process.env.BACKUP_INCLUDE_UPLOADS ?? "false") === "true";
+const BACKUP_INCLUDE_UPLOADS =
+  String(process.env.BACKUP_INCLUDE_UPLOADS ?? "false") === "true";
 
 if (!DATABASE_URL) {
-  throw new Error("Missing DATABASE_URL. Set DATABASE_URL to your PostgreSQL connection string.");
+  throw new Error(
+    "Missing DATABASE_URL. Set DATABASE_URL to your PostgreSQL connection string.",
+  );
 }
 
 const pool = new Pool({
@@ -112,7 +128,9 @@ const initDatabase = async () => {
     ADD COLUMN IF NOT EXISTS attachment_thumb_path TEXT DEFAULT '';
   `);
 
-  const seedCountResult = await pool.query("SELECT COUNT(*)::int AS total FROM posts");
+  const seedCountResult = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM posts",
+  );
   const seedCount = Number(seedCountResult.rows[0]?.total ?? 0);
 
   if (seedCount > 0) {
@@ -149,20 +167,31 @@ const initDatabase = async () => {
   );
 };
 
-const normalizeOrigin = (value) => String(value ?? "").trim().replace(/\/+$/, "");
+const normalizeOrigin = (value) =>
+  String(value ?? "")
+    .trim()
+    .replace(/\/+$/, "");
 const UPLOAD_PUBLIC_BASE_URL = normalizeOrigin(RAW_UPLOAD_PUBLIC_BASE_URL);
 const configuredOrigins = String(process.env.CORS_ORIGINS ?? "")
   .split(",")
   .map(normalizeOrigin)
   .filter(Boolean);
-const defaultOrigins = [normalizeOrigin(process.env.SITE_URL ?? ""), "http://localhost:5173", "http://127.0.0.1:5173"].filter(Boolean);
-const allowedOrigins = new Set(configuredOrigins.length > 0 ? configuredOrigins : defaultOrigins);
+const defaultOrigins = [
+  normalizeOrigin(process.env.SITE_URL ?? ""),
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+].filter(Boolean);
+const allowedOrigins = new Set(
+  configuredOrigins.length > 0 ? configuredOrigins : defaultOrigins,
+);
 
 const requestBuckets = new Map();
 const queryCache = new Map();
 const nowMs = () => Date.now();
 const apiRateLimit = (req, res, next) => {
-  const ip = String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "unknown")
+  const ip = String(
+    req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "unknown",
+  )
     .split(",")[0]
     .trim();
   const key = ip || "unknown";
@@ -176,7 +205,9 @@ const apiRateLimit = (req, res, next) => {
   }
 
   if (current.count >= RATE_LIMIT_MAX) {
-    res.status(429).json({ error: "Too many requests. Please try again shortly." });
+    res
+      .status(429)
+      .json({ error: "Too many requests. Please try again shortly." });
     return;
   }
 
@@ -185,14 +216,17 @@ const apiRateLimit = (req, res, next) => {
   next();
 };
 
-setInterval(() => {
-  const now = nowMs();
-  for (const [key, value] of requestBuckets.entries()) {
-    if (now - value.windowStart >= RATE_LIMIT_WINDOW_MS * 2) {
-      requestBuckets.delete(key);
+setInterval(
+  () => {
+    const now = nowMs();
+    for (const [key, value] of requestBuckets.entries()) {
+      if (now - value.windowStart >= RATE_LIMIT_WINDOW_MS * 2) {
+        requestBuckets.delete(key);
+      }
     }
-  }
-}, Math.max(RATE_LIMIT_WINDOW_MS, 30_000)).unref?.();
+  },
+  Math.max(RATE_LIMIT_WINDOW_MS, 30_000),
+).unref?.();
 
 const getCached = async (key) => {
   const entry = queryCache.get(key);
@@ -256,10 +290,33 @@ const clearCmsCache = async () => {
   }
 };
 
-const sanitizeText = (value, max = 4000) => String(value ?? "").replace(/\u0000/g, "").trim().slice(0, max);
+const sanitizeText = (value, max = 4000) =>
+  String(value ?? "")
+    .replace(/\u0000/g, "")
+    .trim()
+    .slice(0, max);
 const sanitizeContent = (value, max = 200_000) =>
   sanitizeHtml(String(value ?? "").replace(/\u0000/g, ""), {
-    allowedTags: ["p", "br", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "code", "pre", "strong", "em", "ul", "ol", "li", "a", "hr"],
+    allowedTags: [
+      "p",
+      "br",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "blockquote",
+      "code",
+      "pre",
+      "strong",
+      "em",
+      "ul",
+      "ol",
+      "li",
+      "a",
+      "hr",
+    ],
     allowedAttributes: {
       a: ["href", "title", "target", "rel"],
     },
@@ -284,7 +341,9 @@ const parseBoolean = (value, fallback = false) => {
 };
 
 const parsePublishedFlag = (body, fallback) => {
-  const status = String(body.status ?? "").trim().toLowerCase();
+  const status = String(body.status ?? "")
+    .trim()
+    .toLowerCase();
   if (status === "published") {
     return true;
   }
@@ -305,10 +364,16 @@ const isValidSlug = (value) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
 
 const slugExists = async (slug, ignoreId = null) => {
   if (ignoreId) {
-    const result = await pool.query("SELECT 1 FROM posts WHERE slug = $1 AND id <> $2 LIMIT 1", [slug, ignoreId]);
+    const result = await pool.query(
+      "SELECT 1 FROM posts WHERE slug = $1 AND id <> $2 LIMIT 1",
+      [slug, ignoreId],
+    );
     return result.rowCount > 0;
   }
-  const result = await pool.query("SELECT 1 FROM posts WHERE slug = $1 LIMIT 1", [slug]);
+  const result = await pool.query(
+    "SELECT 1 FROM posts WHERE slug = $1 LIMIT 1",
+    [slug],
+  );
   return result.rowCount > 0;
 };
 
@@ -344,7 +409,10 @@ const safeEqual = (first, second) => {
 
 const signToken = (payload) => {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const signature = crypto.createHmac("sha256", AUTH_SECRET).update(body).digest("base64url");
+  const signature = crypto
+    .createHmac("sha256", AUTH_SECRET)
+    .update(body)
+    .digest("base64url");
   return `${body}.${signature}`;
 };
 
@@ -353,7 +421,10 @@ const verifyToken = (token) => {
   if (!body || !signature) {
     return null;
   }
-  const expectedSignature = crypto.createHmac("sha256", AUTH_SECRET).update(body).digest("base64url");
+  const expectedSignature = crypto
+    .createHmac("sha256", AUTH_SECRET)
+    .update(body)
+    .digest("base64url");
   if (!safeEqual(signature, expectedSignature)) {
     return null;
   }
@@ -376,7 +447,10 @@ const getBearerToken = (req) => {
   return auth.slice(7).trim();
 };
 
-const isAdminPayload = (payload) => Boolean(payload && payload.role === "admin" && payload.username === ADMIN_USERNAME);
+const isAdminPayload = (payload) =>
+  Boolean(
+    payload && payload.role === "admin" && payload.username === ADMIN_USERNAME,
+  );
 
 const requireAdmin = (req, res, next) => {
   const payload = verifyToken(getBearerToken(req));
@@ -397,7 +471,10 @@ const escapeXml = (value) =>
     .replace(/'/g, "&apos;");
 
 const toAttachmentPath = (filePath) => {
-  const relative = path.relative(uploadsDir, filePath).split(path.sep).join("/");
+  const relative = path
+    .relative(uploadsDir, filePath)
+    .split(path.sep)
+    .join("/");
   return relative ? `/uploads/${relative}` : "";
 };
 
@@ -420,7 +497,12 @@ const toPublicAssetUrl = (assetPath) => {
     if (UPLOAD_PUBLIC_BASE_URL) {
       return `${UPLOAD_PUBLIC_BASE_URL}/${key}`.replace(/([^:]\/)\/+/g, "$1");
     }
-    const base = normalizeOrigin(S3_PUBLIC_BASE_URL || (S3_ENDPOINT ? `${S3_ENDPOINT}/${bucket}` : `https://${bucket}.s3.${S3_REGION}.amazonaws.com`));
+    const base = normalizeOrigin(
+      S3_PUBLIC_BASE_URL ||
+        (S3_ENDPOINT
+          ? `${S3_ENDPOINT}/${bucket}`
+          : `https://${bucket}.s3.${S3_REGION}.amazonaws.com`),
+    );
     return `${base}/${key}`.replace(/([^:]\/)\/+/g, "$1");
   }
   if (!clean.startsWith("/uploads/")) {
@@ -564,11 +646,15 @@ const convertImageIfNeeded = async (filePath, mimeType) => {
     return;
   }
   const tempPath = withSafeTempFile(filePath);
-  const pipeline = sharp(filePath).rotate().resize({ width: 1920, withoutEnlargement: true });
+  const pipeline = sharp(filePath)
+    .rotate()
+    .resize({ width: 1920, withoutEnlargement: true });
   if (mimeType === "image/jpeg") {
     await pipeline.jpeg({ quality: 82, mozjpeg: true }).toFile(tempPath);
   } else if (mimeType === "image/png") {
-    await pipeline.png({ compressionLevel: 9, adaptiveFiltering: true }).toFile(tempPath);
+    await pipeline
+      .png({ compressionLevel: 9, adaptiveFiltering: true })
+      .toFile(tempPath);
   } else {
     await pipeline.webp({ quality: 82 }).toFile(tempPath);
   }
@@ -583,7 +669,12 @@ const generateThumbnail = async (filePath, mimeType) => {
   const thumbAbsolute = path.join(parsed.dir, `${parsed.name}-thumb.webp`);
   await sharp(filePath)
     .rotate()
-    .resize({ width: 640, height: 640, fit: "inside", withoutEnlargement: true })
+    .resize({
+      width: 640,
+      height: 640,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
     .webp({ quality: 76 })
     .toFile(thumbAbsolute);
   return toAttachmentPath(thumbAbsolute);
@@ -603,7 +694,10 @@ const processAttachmentUpload = async (file) => {
     await convertImageIfNeeded(file.path, file.mimetype);
     thumbnailLocalPath = await generateThumbnail(file.path, file.mimetype);
   } catch (error) {
-    logger.warn({ err: error }, "Attachment optimization failed; using original asset.");
+    logger.warn(
+      { err: error },
+      "Attachment optimization failed; using original asset.",
+    );
   }
 
   const storedMain = await maybeCopyLocalToS3(localPath, file.mimetype);
@@ -626,10 +720,8 @@ const safeDeleteAttachment = async (assetRef) => {
 fs.mkdirSync(uploadsDir, { recursive: true });
 
 const app = express();
-const asyncRoute =
-  (handler) =>
-  (req, res, next) =>
-    Promise.resolve(handler(req, res, next)).catch(next);
+const asyncRoute = (handler) => (req, res, next) =>
+  Promise.resolve(handler(req, res, next)).catch(next);
 
 app.use(
   helmet({
@@ -660,8 +752,14 @@ app.use((req, res, next) => {
   if (origin && isAllowed) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET,POST,PUT,DELETE,OPTIONS",
+    );
     res.setHeader("Access-Control-Allow-Credentials", "true");
   }
 
@@ -699,7 +797,12 @@ const storage = multer.diskStorage({
   },
 });
 
-const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+const allowedMimeTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+]);
 
 const upload = multer({
   storage,
@@ -725,7 +828,8 @@ const loginHandler = (req, res) => {
     res.status(400).json({ error: "Username and password are required." });
     return;
   }
-  const valid = safeEqual(username, ADMIN_USERNAME) && safeEqual(password, ADMIN_PASSWORD);
+  const valid =
+    safeEqual(username, ADMIN_USERNAME) && safeEqual(password, ADMIN_PASSWORD);
   if (!valid) {
     res.status(401).json({ error: "Invalid credentials." });
     return;
@@ -755,15 +859,21 @@ app.get(
   asyncRoute(async (req, res) => {
     const limitRaw = Number(req.query.limit ?? 12);
     const pageRaw = Number(req.query.page ?? 1);
-    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 100) : 12;
-    const page = Number.isFinite(pageRaw) ? Math.max(Math.floor(pageRaw), 1) : 1;
+    const limit = Number.isFinite(limitRaw)
+      ? Math.min(Math.max(limitRaw, 1), 100)
+      : 12;
+    const page = Number.isFinite(pageRaw)
+      ? Math.max(Math.floor(pageRaw), 1)
+      : 1;
     const category = sanitizeText(req.query.category, 120);
     const search = sanitizeText(req.query.search, 220);
     const statusFilter = sanitizeText(req.query.status, 20).toLowerCase();
-    const includeDraftsRequested = String(req.query.includeDrafts ?? "false") === "true";
+    const includeDraftsRequested =
+      String(req.query.includeDrafts ?? "false") === "true";
     const adminPayload = verifyToken(getBearerToken(req));
     const adminView = isAdminPayload(adminPayload);
-    const includeDrafts = includeDraftsRequested && isAdminPayload(adminPayload);
+    const includeDrafts =
+      includeDraftsRequested && isAdminPayload(adminPayload);
 
     if (includeDraftsRequested && !includeDrafts) {
       res.status(401).json({ error: "Unauthorized to include drafts." });
@@ -794,7 +904,9 @@ app.get(
     }
     if (search) {
       values.push(`%${search}%`);
-      clauses.push(`(title ILIKE $${values.length} OR excerpt ILIKE $${values.length} OR content ILIKE $${values.length})`);
+      clauses.push(
+        `(title ILIKE $${values.length} OR excerpt ILIKE $${values.length} OR content ILIKE $${values.length})`,
+      );
     }
     if (statusFilter === "published") {
       clauses.push("is_published = TRUE");
@@ -804,7 +916,10 @@ app.get(
     }
 
     const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
-    const countResult = await pool.query(`SELECT COUNT(*)::int AS total FROM posts ${where}`, values);
+    const countResult = await pool.query(
+      `SELECT COUNT(*)::int AS total FROM posts ${where}`,
+      values,
+    );
     const totalItems = Number(countResult.rows[0]?.total ?? 0);
     const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / limit);
     const currentPage = totalPages === 0 ? 1 : Math.min(page, totalPages);
@@ -865,7 +980,8 @@ app.get(
   "/api/posts/:slug",
   asyncRoute(async (req, res) => {
     const slug = sanitizeText(req.params.slug, 160).toLowerCase();
-    const includeDraftRequested = String(req.query.includeDraft ?? "false") === "true";
+    const includeDraftRequested =
+      String(req.query.includeDraft ?? "false") === "true";
     const adminPayload = verifyToken(getBearerToken(req));
     const includeDraft = includeDraftRequested && isAdminPayload(adminPayload);
 
@@ -881,7 +997,9 @@ app.get(
       return;
     }
 
-    const where = includeDraft ? "slug = $1" : "slug = $1 AND is_published = TRUE";
+    const where = includeDraft
+      ? "slug = $1"
+      : "slug = $1 AND is_published = TRUE";
     const row = await pool.query(
       `
       SELECT
@@ -946,24 +1064,33 @@ app.post(
 
     const publishedAt = normalizeIsoDate(publishedAtRaw, new Date());
     if (!publishedAt) {
-      res.status(400).json({ error: "publishedAt must be a valid ISO date/time." });
+      res
+        .status(400)
+        .json({ error: "publishedAt must be a valid ISO date/time." });
       return;
     }
 
     const requestedSlugRaw = sanitizeText(req.body.slug, 160).toLowerCase();
     if (requestedSlugRaw && !isValidSlug(requestedSlugRaw)) {
-      res.status(400).json({ error: "Slug must be lowercase letters, numbers, and hyphens only." });
+      res
+        .status(400)
+        .json({
+          error: "Slug must be lowercase letters, numbers, and hyphens only.",
+        });
       return;
     }
 
     const slug = requestedSlugRaw || (await uniqueSlug(title));
     if (requestedSlugRaw && (await slugExists(slug))) {
-      res.status(409).json({ error: "Slug already exists. Choose a different slug." });
+      res
+        .status(409)
+        .json({ error: "Slug already exists. Choose a different slug." });
       return;
     }
 
     const now = new Date().toISOString();
-    const { attachmentPath, attachmentMime, attachmentThumbnailPath } = await processAttachmentUpload(req.file);
+    const { attachmentPath, attachmentMime, attachmentThumbnailPath } =
+      await processAttachmentUpload(req.file);
 
     await pool.query(
       `
@@ -972,7 +1099,23 @@ app.post(
       VALUES
         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::timestamptz, $11, $12, $13, $14::timestamptz, $15::timestamptz)
     `,
-      [slug, title, excerpt, content, category, coverImage, attachmentPath, attachmentThumbnailPath, attachmentMime, publishedAt, seoTitle, seoDescription, isPublished, now, now],
+      [
+        slug,
+        title,
+        excerpt,
+        content,
+        category,
+        coverImage,
+        attachmentPath,
+        attachmentThumbnailPath,
+        attachmentMime,
+        publishedAt,
+        seoTitle,
+        seoDescription,
+        isPublished,
+        now,
+        now,
+      ],
     );
 
     await clearCmsCache();
@@ -1002,42 +1145,71 @@ app.put(
     }
 
     const existing = existingResult.rows[0];
-    const hasField = (name) => Object.prototype.hasOwnProperty.call(req.body, name);
+    const hasField = (name) =>
+      Object.prototype.hasOwnProperty.call(req.body, name);
 
-    const title = hasField("title") ? sanitizeText(req.body.title, 280) : existing.title;
+    const title = hasField("title")
+      ? sanitizeText(req.body.title, 280)
+      : existing.title;
     if (!title) {
       res.status(400).json({ error: "Title is required." });
       return;
     }
 
-    const requestedSlugRaw = hasField("slug") ? sanitizeText(req.body.slug, 160).toLowerCase() : existing.slug;
+    const requestedSlugRaw = hasField("slug")
+      ? sanitizeText(req.body.slug, 160).toLowerCase()
+      : existing.slug;
     if (!requestedSlugRaw || !isValidSlug(requestedSlugRaw)) {
-      res.status(400).json({ error: "Slug must be lowercase letters, numbers, and hyphens only." });
+      res
+        .status(400)
+        .json({
+          error: "Slug must be lowercase letters, numbers, and hyphens only.",
+        });
       return;
     }
-    if (requestedSlugRaw !== existing.slug && (await slugExists(requestedSlugRaw, existing.id))) {
-      res.status(409).json({ error: "Slug already exists. Choose a different slug." });
+    if (
+      requestedSlugRaw !== existing.slug &&
+      (await slugExists(requestedSlugRaw, existing.id))
+    ) {
+      res
+        .status(409)
+        .json({ error: "Slug already exists. Choose a different slug." });
       return;
     }
 
-    const excerpt = hasField("excerpt") ? sanitizeText(req.body.excerpt, 2000) : existing.excerpt;
-    const content = hasField("content") ? sanitizeContent(req.body.content, 200_000) : existing.content;
-    const category = hasField("category") ? sanitizeText(req.body.category, 80) || "blog" : existing.category;
-    const seoTitle = hasField("seoTitle") ? sanitizeText(req.body.seoTitle, 280) : existing.seo_title;
-    const seoDescription = hasField("seoDescription") ? sanitizeText(req.body.seoDescription, 320) : existing.seo_description;
-    const coverImage = hasField("coverImage") ? sanitizeText(req.body.coverImage, 1200) : existing.cover_image;
+    const excerpt = hasField("excerpt")
+      ? sanitizeText(req.body.excerpt, 2000)
+      : existing.excerpt;
+    const content = hasField("content")
+      ? sanitizeContent(req.body.content, 200_000)
+      : existing.content;
+    const category = hasField("category")
+      ? sanitizeText(req.body.category, 80) || "blog"
+      : existing.category;
+    const seoTitle = hasField("seoTitle")
+      ? sanitizeText(req.body.seoTitle, 280)
+      : existing.seo_title;
+    const seoDescription = hasField("seoDescription")
+      ? sanitizeText(req.body.seoDescription, 320)
+      : existing.seo_description;
+    const coverImage = hasField("coverImage")
+      ? sanitizeText(req.body.coverImage, 1200)
+      : existing.cover_image;
 
     const publishedAt = hasField("publishedAt")
       ? normalizeIsoDate(sanitizeText(req.body.publishedAt, 80))
       : new Date(existing.published_at).toISOString();
     if (!publishedAt) {
-      res.status(400).json({ error: "publishedAt must be a valid ISO date/time." });
+      res
+        .status(400)
+        .json({ error: "publishedAt must be a valid ISO date/time." });
       return;
     }
 
-    const isPublished = hasField("status") || hasField("isPublished")
-      ? parsePublishedFlag(req.body, Boolean(existing.is_published))
-      : Boolean(existing.is_published);
+    const isPublished =
+      hasField("status") || hasField("isPublished")
+        ? parsePublishedFlag(req.body, Boolean(existing.is_published))
+        : Boolean(existing.is_published);
 
     let attachmentPath = existing.attachment_path ?? "";
     let attachmentThumbnailPath = existing.attachment_thumb_path ?? "";
@@ -1080,7 +1252,23 @@ app.put(
         updated_at = $14::timestamptz
       WHERE id = $15
     `,
-      [requestedSlugRaw, title, excerpt, content, category, coverImage, attachmentPath, attachmentThumbnailPath, attachmentMime, publishedAt, seoTitle, seoDescription, isPublished, now, existing.id],
+      [
+        requestedSlugRaw,
+        title,
+        excerpt,
+        content,
+        category,
+        coverImage,
+        attachmentPath,
+        attachmentThumbnailPath,
+        attachmentMime,
+        publishedAt,
+        seoTitle,
+        seoDescription,
+        isPublished,
+        now,
+        existing.id,
+      ],
     );
 
     await clearCmsCache();
@@ -1093,7 +1281,10 @@ app.delete(
   requireAdmin,
   asyncRoute(async (req, res) => {
     const slug = sanitizeText(req.params.slug, 160).toLowerCase();
-    const existingResult = await pool.query("SELECT id, attachment_path, attachment_thumb_path FROM posts WHERE slug = $1 LIMIT 1", [slug]);
+    const existingResult = await pool.query(
+      "SELECT id, attachment_path, attachment_thumb_path FROM posts WHERE slug = $1 LIMIT 1",
+      [slug],
+    );
     if (existingResult.rowCount === 0) {
       res.status(404).json({ error: "Post not found." });
       return;
@@ -1118,8 +1309,20 @@ app.get(
       return;
     }
 
-    const base = normalizeOrigin(process.env.SITE_URL ?? "https://antara.bits-goa.example");
-    const staticPaths = ["/", "/partners", "/events", "/mini-projects", "/ground-station", "/payload-development", "/adcs", "/newsletter", "/admin"];
+    const base = normalizeOrigin(
+      process.env.SITE_URL ?? "https://antara.bits-goa.example",
+    );
+    const staticPaths = [
+      "/",
+      "/partners",
+      "/events",
+      "/mini-projects",
+      "/ground-station",
+      "/payload-development",
+      "/adcs",
+      "/newsletter",
+      "/admin",
+    ];
     const postsResult = await pool.query(
       `
       SELECT slug, published_at AS "publishedAt", updated_at AS "updatedAt"
@@ -1159,8 +1362,12 @@ ${urls
 );
 
 app.get("/robots.txt", (_, res) => {
-  const base = normalizeOrigin(process.env.SITE_URL ?? "https://antara.bits-goa.example");
-  res.type("text/plain").send(`User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
+  const base = normalizeOrigin(
+    process.env.SITE_URL ?? "https://antara.bits-goa.example",
+  );
+  res
+    .type("text/plain")
+    .send(`User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
 });
 
 app.get(
@@ -1174,7 +1381,9 @@ app.get(
       return;
     }
 
-    const base = normalizeOrigin(process.env.SITE_URL ?? "https://antara.bits-goa.example");
+    const base = normalizeOrigin(
+      process.env.SITE_URL ?? "https://antara.bits-goa.example",
+    );
     const rows = await pool.query(
       `
       SELECT slug, title, excerpt, content, published_at AS "publishedAt", updated_at AS "updatedAt"
@@ -1188,7 +1397,8 @@ app.get(
     const items = rows.rows
       .map((post) => {
         const link = `${base}/posts/${post.slug}`;
-        const description = post.excerpt || String(post.content ?? "").slice(0, 320);
+        const description =
+          post.excerpt || String(post.content ?? "").slice(0, 320);
         return `<item>
   <title>${escapeXml(post.title)}</title>
   <link>${escapeXml(link)}</link>
@@ -1244,10 +1454,16 @@ const runBackup = async (reason = "manual") => {
     ORDER BY updated_at DESC
   `);
 
-  fs.writeFileSync(path.join(backupPath, "posts.json"), JSON.stringify(result.rows, null, 2), "utf8");
+  fs.writeFileSync(
+    path.join(backupPath, "posts.json"),
+    JSON.stringify(result.rows, null, 2),
+    "utf8",
+  );
 
   if (BACKUP_INCLUDE_UPLOADS && !s3Enabled && fs.existsSync(uploadsDir)) {
-    fs.cpSync(uploadsDir, path.join(backupPath, "uploads"), { recursive: true });
+    fs.cpSync(uploadsDir, path.join(backupPath, "uploads"), {
+      recursive: true,
+    });
   }
 
   const metadata = {
@@ -1256,7 +1472,11 @@ const runBackup = async (reason = "manual") => {
     postCount: result.rows.length,
     storage: s3Enabled ? "s3" : "local",
   };
-  fs.writeFileSync(path.join(backupPath, "metadata.json"), JSON.stringify(metadata, null, 2), "utf8");
+  fs.writeFileSync(
+    path.join(backupPath, "metadata.json"),
+    JSON.stringify(metadata, null, 2),
+    "utf8",
+  );
 
   const retentionMs = Math.max(1, BACKUP_RETENTION_DAYS) * 24 * 60 * 60 * 1000;
   const now = Date.now();
@@ -1271,7 +1491,10 @@ const runBackup = async (reason = "manual") => {
     }
   }
 
-  logger.info({ backupPath, reason, postCount: result.rows.length }, "Backup completed.");
+  logger.info(
+    { backupPath, reason, postCount: result.rows.length },
+    "Backup completed.",
+  );
   return { backupPath, postCount: result.rows.length };
 };
 
@@ -1283,7 +1506,8 @@ app.post(
     res.json({ ok: true, ...backup });
   }),
 );
-
+console.log("DIST DIR:", distDir);
+console.log("EXISTS:", fs.existsSync(distDir));
 if (fs.existsSync(distDir)) {
   app.use(express.static(distDir));
 
@@ -1300,7 +1524,11 @@ const port = Number(process.env.PORT ?? 8787);
 app.use((error, _req, res, _next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
-      res.status(413).json({ error: `Upload exceeds maximum allowed size (${UPLOAD_MAX_MB}MB).` });
+      res
+        .status(413)
+        .json({
+          error: `Upload exceeds maximum allowed size (${UPLOAD_MAX_MB}MB).`,
+        });
       return;
     }
     res.status(400).json({ error: error.message });
@@ -1315,7 +1543,9 @@ app.use((error, _req, res, _next) => {
   }
 
   if (error?.code === "23505") {
-    res.status(409).json({ error: "Slug already exists. Choose a different slug." });
+    res
+      .status(409)
+      .json({ error: "Slug already exists. Choose a different slug." });
     return;
   }
 
@@ -1336,7 +1566,10 @@ const initRedis = async () => {
     logger.info("Redis cache connected.");
   } catch (error) {
     redisReady = false;
-    logger.warn({ err: error }, "Redis unavailable; continuing with in-memory cache.");
+    logger.warn(
+      { err: error },
+      "Redis unavailable; continuing with in-memory cache.",
+    );
   }
 };
 
@@ -1350,28 +1583,42 @@ const startServer = async () => {
   await initDatabase();
 
   app.listen(port, () => {
-    if (AUTH_SECRET === "change-this-secret" || ADMIN_PASSWORD === "change-me") {
-      logger.warn("Security warning: set ADMIN_USERNAME, ADMIN_PASSWORD, and AUTH_SECRET before public deployment.");
+    if (
+      AUTH_SECRET === "change-this-secret" ||
+      ADMIN_PASSWORD === "change-me"
+    ) {
+      logger.warn(
+        "Security warning: set ADMIN_USERNAME, ADMIN_PASSWORD, and AUTH_SECRET before public deployment.",
+      );
     }
     logger.info({ port }, "Antara server started.");
   });
 
   if (BACKUP_ENABLED) {
-    backupIntervalHandle = setInterval(() => {
-      runBackup("scheduled").catch((error) => {
-        logger.error({ err: error }, "Scheduled backup failed.");
-      });
-    }, Math.max(BACKUP_INTERVAL_MS, 60_000));
+    backupIntervalHandle = setInterval(
+      () => {
+        runBackup("scheduled").catch((error) => {
+          logger.error({ err: error }, "Scheduled backup failed.");
+        });
+      },
+      Math.max(BACKUP_INTERVAL_MS, 60_000),
+    );
     backupIntervalHandle.unref?.();
     logger.info(
-      { backupIntervalMs: Math.max(BACKUP_INTERVAL_MS, 60_000), backupDir: BACKUP_DIR },
+      {
+        backupIntervalMs: Math.max(BACKUP_INTERVAL_MS, 60_000),
+        backupDir: BACKUP_DIR,
+      },
       "Automatic backups enabled.",
     );
   }
 };
 
 startServer().catch((error) => {
-  logger.fatal({ err: error }, "Failed to initialize dependencies or database.");
+  logger.fatal(
+    { err: error },
+    "Failed to initialize dependencies or database.",
+  );
   process.exit(1);
 });
 
