@@ -873,6 +873,10 @@ const upload = multer({
 const loginHandler = (req, res) => {
   const username = sanitizeText(req.body.username, 120);
   const password = String(req.body.password ?? "");
+  console.log("INPUT USER:", username);
+  console.log("INPUT PASS:", password);
+  console.log("ENV USER:", ADMIN_USERNAME);
+  console.log("ENV PASS:", ADMIN_PASSWORD);
   if (!username || !password) {
     res.status(400).json({ error: "Username and password are required." });
     return;
