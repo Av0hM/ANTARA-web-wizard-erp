@@ -624,9 +624,11 @@ function SiteHeader({ progress }: { progress: number }) {
   return (
     <header className="mission-hud" aria-label="Site navigation">
       <SmartLink className="mission-hud__brand mission-hud__brand-link" href="/">
-        <span>Project Antara</span>
-        <span>CubeSat Radiation Mission</span>
-      </SmartLink>
+        <div className="brand-main">
+          <img src="src\assets\logo.jpg" alt="Antara logo" />
+          <span>Project Antara</span>
+        </div>
+</SmartLink>
       <nav className="mission-hud__nav" aria-label="Primary">
         {homeNavItems.map((item) => (
           <SmartLink key={item.label} className="mission-hud__link" href={item.href}>
