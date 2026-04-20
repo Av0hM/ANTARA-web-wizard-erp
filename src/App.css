@@ -265,7 +265,7 @@
   z-index: 2;
   padding: 7rem clamp(1.25rem, 5vw, 4rem) 2rem;
   background:
-    linear-gradient(180deg, rgba(17, 18, 20, 0.96), rgba(233, 228, 218, 0.98) 18%, #ede8df 100%);
+    linear-gradient(180deg, rgba(9, 88, 190, 0.96), rgba(0, 20, 133, 0.98) 18%, #ede8df 100%);
   border-top: 1px solid rgba(255, 244, 224, 0.16);
 }
 
@@ -423,7 +423,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #756f67;
+  color: #f0f4ff;
 }
 
 .archive-section__card h4 {
@@ -438,7 +438,7 @@
 .archive-section__card span {
   display: block;
   margin-top: 0.8rem;
-  color: #59554f;
+  color: #f0f4ff;
   line-height: 1.7;
 }
 
@@ -721,7 +721,7 @@
   font-size: 1.5rem;
   line-height: 0.98;
   text-transform: uppercase;
-  color: #17181b;
+  color: #f0f4ff;
 }
 
 .database-feed__card-link {
@@ -806,7 +806,7 @@
   font-family: var(--font-display);
   font-size: 1.5rem;
   text-transform: uppercase;
-  color: #161618;
+  color: #f0f4ff;
 }
 
 .gallery-card__body span {
@@ -1578,12 +1578,12 @@
   background:
     radial-gradient(circle at 10% -10%, rgba(68, 212, 255, 0.08), transparent 24%),
     radial-gradient(circle at 88% -8%, rgba(245, 166, 74, 0.09), transparent 26%),
-    linear-gradient(180deg, #070d1b 0%, #0c1427 54%, #101a32 100%);
+    linear-gradient(180deg,#000000  0%, #001545 54%, #06001e 100%);
 }
 
 .info-hub::before {
   height: 2px;
-  background: linear-gradient(90deg, rgba(68, 212, 255, 0.8), rgba(116, 88, 255, 0.75), rgba(245, 166, 74, 0.82));
+  background: linear-gradient(90deg, rgba(1, 46, 59, 0.8), rgba(116, 88, 255, 0.75), rgba(245, 166, 74, 0.82));
 }
 
 .archive-grid {
@@ -1677,11 +1677,11 @@
 }
 
 .archive-section__point {
-  background: linear-gradient(130deg, rgba(14, 24, 45, 0.88), rgba(9, 18, 34, 0.78));
+  background: linear-gradient(130deg, rgba(23, 52, 112, 0.88), rgba(9, 18, 34, 0.78));
 }
 
 .info-hub__detail-mark {
-  background: #44d4ff;
+  background: #857ee0;
   box-shadow: 0 0 0 6px rgba(68, 212, 255, 0.16);
 }
 

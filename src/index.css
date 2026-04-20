@@ -12,15 +12,15 @@
   --aurora-teal: #38bfb3;
   --cloud-white: #F0F4FF;
   --text-primary: #F0F4FF;
-  --text-secondary: #6D8196;
-  --text-muted: #6D8196;
+  --text-secondary: #F0F4FF;
+  --text-muted: #F0F4FF;
   --border-soft: rgba(109, 129, 150, 0.4);
-  --glass-bg: linear-gradient(160deg, rgba(16, 26, 46, 0.68), rgba(8, 14, 28, 0.52));
-  --glass-panel: linear-gradient(150deg, rgba(13, 21, 38, 0.74), rgba(8, 14, 26, 0.58));
+  --glass-bg: linear-gradient(160deg, rgba(67, 48, 171, 0.68), rgba(0, 0, 0, 0.52));
+  --glass-panel: linear-gradient(150deg, rgba(139, 156, 214, 0.58), rgba(84, 0, 194, 0.18));
   --gradient-hero:
-    /*radial-gradient(1200px 560px at 50% -8%, rgba(116, 88, 255, 0.24), transparent 64%),
+    radial-gradient(1200px 560px at 50% -8%, rgba(116, 88, 255, 0.24), transparent 64%),
     radial-gradient(820px 420px at 10% 8%, rgba(68, 212, 255, 0.16), transparent 62%),
-    radial-gradient(880px 420px at 88% 12%, rgba(245, 166, 74, 0.14), transparent 62%),*/
+    radial-gradient(880px 420px at 88% 12%, rgba(245, 166, 74, 0.14), transparent 62%),
     linear-gradient(180deg,#272757 0%, #1E2A4A 100%);
   --shadow-soft: 0 18px 44px rgba(1, 5, 12, 0.45);
   --shadow-card: 0 22px 54px rgba(1, 5, 12, 0.48);
