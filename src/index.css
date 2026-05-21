@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap");
 
 :root {
   --space-990: #272757;
@@ -16,9 +16,9 @@
   --text-muted: #F0F4FF;
   --border-soft: rgba(109, 129, 150, 0.4);
   --glass-bg: linear-gradient(160deg, rgba(67, 48, 171, 0.68), rgba(0, 0, 0, 0.52));
-  --glass-panel: linear-gradient(150deg, rgba(139, 156, 214, 0.58), rgba(84, 0, 194, 0.18));
+  --glass-panel: linear-gradient(150deg, rgba(255, 0, 76, 0.199), rgba(0, 0, 0, 0.18));
   --gradient-hero:
-    radial-gradient(1200px 560px at 50% -8%, rgba(116, 88, 255, 0.24), transparent 64%),
+    radial-gradient(1200px 560px at 50% -8%, rgba(116, 88, 255, 0.664), transparent 64%),
     radial-gradient(820px 420px at 10% 8%, rgba(68, 212, 255, 0.16), transparent 62%),
     radial-gradient(880px 420px at 88% 12%, rgba(245, 166, 74, 0.14), transparent 62%),
     linear-gradient(180deg,#272757 0%, #1E2A4A 100%);
@@ -39,9 +39,9 @@
   --space-6: 2.2rem;
   --space-7: 3rem;
   --space-8: 4rem;
-  --font-hero: "Playfair Display", Georgia, serif;
-  --font-heading: "Space Grotesk", "Segoe UI", sans-serif;
-  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-hero: "Sora", "Inter", "Segoe UI", sans-serif;
+  --font-heading: "Sora", "Inter", "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans", "Inter", "Segoe UI", sans-serif;
   --font-display: var(--font-heading);
   --bg-space: var(--space-990);
   --gold-soft: var(--solar-amber);
@@ -67,7 +67,7 @@
 }
 
 html {
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
   background: var(--space-990);
 }
 

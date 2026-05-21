@@ -15,12 +15,12 @@ declare global {
 gsap.registerPlugin(ScrollTrigger);
 
 const lenis = new Lenis({
-  lerp: 0.07,
+  lerp: 0.06,
   smoothWheel: true,
-  wheelMultiplier: 0.95,
-  touchMultiplier: 0.92,
+  wheelMultiplier: 0.72,
+  touchMultiplier: 0.85,
   syncTouch: true,
-  syncTouchLerp: 0.08,
+  syncTouchLerp: 0.12,
   autoResize: true,
 });
 
