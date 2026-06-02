@@ -1,3 +1,15 @@
+:root {
+  --color-background-primary: #0f141b;
+  --color-background-secondary: #151b24;
+  --color-background-info: rgba(68, 212, 255, 0.12);
+  --color-background-success: rgba(201, 120, 43, 0.14);
+  --color-text-info: rgba(182, 224, 255, 0.92);
+  --color-text-success: rgba(255, 233, 206, 0.92);
+  --color-text-tertiary: rgba(244, 238, 227, 0.56);
+  --color-border-tertiary: rgba(255, 255, 255, 0.12);
+  --border-radius-md: var(--radius-md);
+}
+
 .mission-shell {
   position: relative;
   min-height: 100%;
@@ -36,6 +48,11 @@
   object-fit: cover;
   filter: saturate(0.86) contrast(1.78) brightness(0.92);
   transform: scale(1.04);
+}
+
+.journey-video--preload {
+  opacity: 0.001;
+  pointer-events: none;
 }
 
 .journey-video__overlay {
@@ -2897,5 +2914,156 @@
   .side-menu {
     top: 4.95rem;
     left: 0.55rem;
+  }
+}
+
+/* UX fix overrides */
+.mission-hud__menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mission-hud__menu-icon {
+  width: 18px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mission-hud__progress {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.mission-hud__scene-counter {
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  text-align: right;
+}
+
+.mission-hud__link.is-active {
+  background: rgba(218, 145, 86, 0.2);
+  color: #fff;
+}
+
+.scroll-hint {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9;
+  color: #f4eee3;
+  opacity: 1;
+  transition: opacity 220ms ease;
+  animation: scrollHintBob 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.scroll-hint.is-hidden {
+  opacity: 0;
+}
+
+.scroll-hint__icon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.database-feed__card--skeleton {
+  display: grid;
+}
+
+.database-feed__skeleton-line {
+  border-radius: 4px;
+  background-image: linear-gradient(
+    90deg,
+    var(--color-border-tertiary) 0%,
+    var(--color-background-secondary) 50%,
+    var(--color-border-tertiary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.35s linear infinite;
+}
+
+.image-viewer__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.image-viewer__toolbar-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.image-viewer__toolbar-group--spaced {
+  margin-left: 12px;
+}
+
+.image-viewer__toolbar-separator {
+  width: 0.5px;
+  height: 16px;
+  background: var(--color-border-tertiary);
+}
+
+.image-viewer__toolbar button,
+.image-viewer__toolbar a {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.75rem;
+  border-radius: var(--border-radius-md);
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+  color: #f4e8d6;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.image-viewer__toolbar a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+@keyframes scrollHintBob {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(8px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint {
+    animation: none;
+  }
+
+  .database-feed__skeleton-line {
+    animation: none;
   }
 }

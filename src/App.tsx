@@ -133,85 +133,75 @@ type PaginatedPostsResponse = {
 const missionScenes: MissionScene[] = [
   {
     id: "boot",
-    eyebrow: "Scene 01",
+    eyebrow: "From BITS Goa",
     title: "BITS Goa Presents",
-    copy: ["The signal wakes in silence before the mission begins."],
+    copy: ["Twenty-three students. One satellite. The work starts here."],
     align: "center",
   },
   {
     id: "title",
-    eyebrow: "Scene 02",
+    eyebrow: "The Mission",
     title: "Project Antara",
-    copy: [
-      "Student-built CubeSat mission",
-      "Scroll to continue the flight path.",
-    ],
+    copy: ["A student-built CubeSat designed to study radiation in Low Earth Orbit.", "Scroll to follow the flight path."],
     align: "center",
   },
   {
     id: "orbit",
-    eyebrow: "Scene 03",
+    eyebrow: "Where We're Going",
     title: "Low Earth Orbit",
     copy: [
-      "Earth rises beneath the spacecraft.",
-      "Radiation is not uniform. Some regions are dangerous.",
+      "At 400 to 600 kilometres above Earth, the environment is hostile and unforgiving.",
+      "Radiation levels aren't uniform. Some regions are far more dangerous than others.",
     ],
     align: "left",
   },
   {
     id: "anomaly",
-    eyebrow: "Scene 04",
+    eyebrow: "The Target",
     title: "The South Atlantic Anomaly",
-    copy: ["A region of intensified radiation revealed in heat and particles."],
+    copy: ["A region where Earth's magnetic field dips and trapped radiation surges close to the surface. It's one of the most challenging zones any spacecraft can cross."],
     align: "right",
   },
   {
     id: "entry",
-    eyebrow: "Scene 05",
-    title: "Project Antara Enters the Anomaly",
-    copy: ["Measuring high-energy trapped protons along the mission arc."],
+    eyebrow: "Our Focus",
+    title: "Antara Enters the Anomaly",
+    copy: ["We're building a payload to measure high-energy trapped protons as the satellite passes through this region, pass by pass, orbit by orbit."],
     align: "left",
   },
   {
     id: "payload",
-    eyebrow: "Scene 06",
-    title: "Payload Visualization",
-    copy: [
-      "Detector. Electronics. Shielding.",
-      "A compact stack designed for radiation insight.",
-    ],
+    eyebrow: "The Hardware",
+    title: "What We're Flying",
+    copy: ["A compact detector stack. Shielding. Electronics we designed and tested ourselves.", "Built to survive the environment it's there to study."],
     align: "right",
   },
   {
     id: "systems",
-    eyebrow: "Scene 07",
-    title: "Systems Architecture",
-    copy: [
-      "ADCS, payload, and ground station operate as one coordinated loop.",
-    ],
+    eyebrow: "How It Works Together",
+    title: "One Coordinated System",
+    copy: ["The payload, attitude control system, and ground station don't operate in isolation. Every subsystem depends on the others. That's what makes this hard and why it matters."],
     align: "center",
   },
   {
     id: "data",
-    eyebrow: "Scene 08",
-    title: "Radiation Data For Future Missions",
-    copy: [
-      "Flux curves, energy distribution, and spatial variation flow out of orbit.",
-    ],
+    eyebrow: "What We'll Learn",
+    title: "Radiation Data That Doesn't Exist Yet",
+    copy: ["Flux curves. Energy distributions. Spatial variation mapped across orbital segments. Data that future missions and future students will actually use."],
     align: "left",
   },
   {
     id: "students",
-    eyebrow: "Scene 09",
-    title: "Built By Students",
-    copy: ["BITS Goa turns curiosity into space-ready instrumentation."],
+    eyebrow: "Who We Are",
+    title: "Built by 23 Students at BITS Goa",
+    copy: ["Not a simulation. Not a textbook exercise. A real satellite, built by real students who decided to do something that hasn't been done here before."],
     align: "right",
   },
   {
     id: "finale",
-    eyebrow: "Scene 10",
-    title: "Launching The Next Generation Of Space Missions",
-    copy: ["Project Antara closes on the stars and opens toward the mission."],
+    eyebrow: "The Beginning",
+    title: "This Is How the Next Generation Learns to Build for Space",
+    copy: ["Antara isn't just a mission. It's proof that students can do serious science if they're willing to do the work."],
     align: "center",
   },
 ];
@@ -220,28 +210,28 @@ const archiveSections: ArchiveSection[] = [
   {
     id: "about",
     eyebrow: "Project Overview",
-    title: "A student mission with research intent and engineering discipline.",
+    title: "A student mission built with research intent and engineering discipline.",
     intro:
-      "Antara is being shaped as a serious student-built space systems effort: one part radiation science, one part spacecraft engineering, and one part team-building platform for the next generation of mission designers.",
+      "Antara is a CubeSat mission being built from the ground up by students at BITS Pilani, K K Birla Goa Campus. The goal is to study radiation in Low Earth Orbit, specifically the behaviour of trapped protons in the South Atlantic Anomaly, and return data that is genuinely useful for future spacecraft design.",
     points: [
-      "Focused on radiation behavior in Low Earth Orbit, with special attention to the South Atlantic Anomaly.",
-      "Built to connect payload science, spacecraft systems, and mission operations in one integrated learning program.",
-      "Designed to communicate like a real mission archive rather than a college club microsite.",
+      "Focused on radiation measurement in LEO, with special attention to the South Atlantic Anomaly, one of the most operationally significant regions for spacecraft.",
+      "Designed to connect payload science, spacecraft systems, and ground operations into one integrated engineering program that students own end to end.",
+      "Built to be legible to sponsors, collaborators, and the broader space community, not just the team building it.",
     ],
     facts: ["Student-led", "CubeSat mission", "BITS Goa"],
     cards: [
       {
         eyebrow: "Why It Matters",
-        title: "A mission that explains itself clearly.",
+        title: "Real science needs real hardware.",
         summary:
-          "The site should communicate the mission to sponsors, students, and technically curious visitors without losing seriousness.",
+          "The data Antara collects doesn't exist in this form yet. Trapped proton behaviour in the SAA, measured by a student-built detector, is a contribution, not just a learning exercise.",
         tone: "rust",
       },
       {
-        eyebrow: "Positioning",
-        title: "Part research platform, part talent engine.",
+        eyebrow: "What Makes This Different",
+        title: "A research platform and a training ground, at the same time.",
         summary:
-          "Antara can present itself as both a scientific effort and a training ground for future spacecraft engineers.",
+          "Antara is preparing the next generation of spacecraft engineers by making them responsible for a real mission from requirements to data products.",
         tone: "gold",
       },
     ],
@@ -249,60 +239,57 @@ const archiveSections: ArchiveSection[] = [
   {
     id: "mission",
     eyebrow: "Flight Archive",
-    title:
-      "Scientific objectives, architecture, and mission value in one place.",
+    title: "The science, the systems, and why this mission is worth flying.",
     intro:
-      "This section is designed for the material that decision-makers and technically curious visitors want after the cinematic hook: why the mission matters, how the payload works, and what the data unlocks.",
+      "This section is for anyone who wants to understand what Antara is actually doing, not just the surface story. Here you'll find the mission objective, how the payload works, what we expect to measure, and why the South Atlantic Anomaly is the right target.",
     points: [
-      "Clear mission objective framing around trapped proton measurement and spatial radiation variation.",
-      "Expandable room for architecture diagrams, orbital assumptions, payload stack explanations, and operations flow.",
-      "A stronger bridge between the emotional landing page and the factual information a serious mission site needs.",
+      "The core objective: measure trapped proton flux and energy distribution as Antara passes through the South Atlantic Anomaly across multiple orbital segments.",
+      "The spacecraft brings together a custom payload stack, an attitude determination and control system, and a ground station, all designed to work as one.",
+      "The data output isn't raw telemetry. It's calibrated, interpreted, and built to be useful to mission designers beyond the team that collected it.",
     ],
     facts: ["LEO radiation", "SAA focus", "Payload data"],
     cards: [
       {
-        eyebrow: "Objective",
-        title:
-          "Measure radiation behavior where it becomes operationally important.",
+        eyebrow: "Scientific Objective",
+        title: "Measure radiation where it becomes operationally dangerous.",
         summary:
-          "The mission centers on understanding trapped proton behavior and where it intensifies across orbital regions.",
+          "The South Atlantic Anomaly is where trapped particles come closest to Earth's surface. Understanding its structure, pass by pass, is the mission.",
         tone: "teal",
       },
       {
-        eyebrow: "Output",
-        title: "Turn orbital measurements into mission-ready insight.",
+        eyebrow: "What We Deliver",
+        title: "Measurements that become something someone can use.",
         summary:
-          "The payload story should end in interpretable data products, not just hardware imagery.",
+          "Antara's payload story ends in data products, flux curves, energy distributions, spatial maps, not just hardware photos and block diagrams.",
         tone: "slate",
       },
     ],
   },
   {
     id: "team",
-    eyebrow: "People Behind Antara",
-    title:
-      "Students building payloads, systems, storytelling, and mission confidence.",
+    eyebrow: "The Team",
+    title: "Twenty-three students building a satellite, one subsystem at a time.",
     intro:
-      "The team section now has space for subsystem leads, contributors, faculty mentors, and operations roles so the project feels credible and alive. You can replace this seed content with real names and responsibilities as they lock in.",
+      "Antara is run by students. Not advised by students, run by them. Each subsystem has an owner. Each decision has a name attached to it. That's what makes this a mission rather than a project.",
     points: [
-      "Payload and scientific instrumentation members focused on detector design, shielding, and data quality.",
-      "ADCS, power, structures, and onboard systems contributors turning mission requirements into a viable CubeSat platform.",
-      "Ground station, outreach, and media collaborators translating technical work into public mission storytelling.",
+      "Payload and instrumentation members focused on detector design, shielding trade-offs, electronics integration, and data quality from the first measurement to the last.",
+      "ADCS, power, structures, and onboard systems contributors who are turning mission requirements into a spacecraft that can actually survive orbit.",
+      "Ground station, outreach, and communications contributors who make sure the mission is legible, to the public, to sponsors, and to the students who will join after us.",
     ],
-    facts: ["Subsystem leads", "Faculty mentors", "Operations roles"],
+    facts: ["23 members", "Subsystem leads", "Faculty mentors"],
     cards: [
       {
-        eyebrow: "Subsystems",
-        title: "Engineering ownership should be visible.",
+        eyebrow: "Ownership",
+        title: "Every subsystem has a student who is responsible for it.",
         summary:
-          "Give each subsystem a clear place so the team reads like a functioning mission organization.",
+          "Not just contributing, owning. The team is structured so that engineering decisions have clear authors and can be reviewed, defended, and improved.",
         tone: "gold",
       },
       {
         eyebrow: "Culture",
-        title: "People, not placeholders.",
+        title: "We're not performing a space mission. We're building one.",
         summary:
-          "A stronger team section comes from showing roles, focus areas, and contribution, not generic profile tiles.",
+          "The difference shows in the details, in the test reports, the design reviews, the late nights debugging something that has to work before launch.",
         tone: "rust",
       },
     ],
@@ -310,29 +297,28 @@ const archiveSections: ArchiveSection[] = [
   {
     id: "blogs",
     eyebrow: "Mission Log",
-    title:
-      "A place for updates, build diaries, tests, and launch-season momentum.",
+    title: "Progress notes, build updates, and the occasional hard lesson.",
     intro:
-      "Instead of generic cards, the blog area is set up like a mission log. It can hold progress notes, subsystem milestones, payload test reports, interviews, and launch prep updates without breaking the overall visual language.",
+      "The mission log is where the work gets documented in real time. Not press releases, actual updates. What we tested, what failed, what we learned, and where we're headed next. If Antara is doing something, it ends up here.",
     points: [
-      "Weekly build logs documenting prototypes, reviews, and design pivots.",
-      "Technical explainers for payload physics, radiation mapping, and systems architecture.",
-      "Public updates that make the mission legible to sponsors, students, and future team members.",
+      "Weekly and biweekly build logs covering prototypes, design reviews, fabrication runs, and subsystem milestones as they happen.",
+      "Technical explainers for anyone who wants to understand the payload physics, the orbital mechanics, or the systems architecture without having to dig through a thesis.",
+      "Public updates that keep sponsors, collaborators, and prospective team members close to the actual state of the mission, not a polished version of it.",
     ],
-    facts: ["Mission log", "Tech explainers", "Public updates"],
+    facts: ["Mission log", "Tech explainers", "Live updates"],
     cards: [
       {
-        eyebrow: "Editorial",
-        title: "Write like a mission log, not a marketing feed.",
+        eyebrow: "Editorial Standard",
+        title: "Write like the work matters. Because it does.",
         summary:
-          "Posts can cover tests, reviews, fabrication, subsystem milestones, and outreach in a more durable format.",
+          "Antara's mission log covers tests, reviews, fabrication, setbacks, and milestones, written honestly, for people who want to follow a real engineering effort.",
         tone: "slate",
       },
       {
         eyebrow: "Cadence",
-        title: "Let the project feel active.",
+        title: "A live mission should feel like one.",
         summary:
-          "Even short updates help the site feel like a working spacecraft program rather than a static portfolio.",
+          "Even short updates matter. They show that people are working, that things are moving, and that the satellite is closer to orbit than it was last month.",
         tone: "teal",
       },
     ],
@@ -341,39 +327,39 @@ const archiveSections: ArchiveSection[] = [
 
 const galleryItems: GalleryItem[] = [
   {
-    title: "The South Atlantic Anomaly Region",
+    title: "The South Atlantic Anomaly",
     caption:
-      "A visual reference for the kind of cinematic framing Antara is aiming for in orbit.",
+      "The region Antara is built to understand, where trapped radiation presses closest to Earth.",
     src: "https://www.nasa.gov/wp-content/uploads/2023/03/194991main_s120e006867_hires_full.jpg?w=1041",
     topic: "South Atlantic Anomaly",
     details: [
-      "The South Atlantic Anomaly is a reduced magnetic field region where trapped particles dip closer to Earth in low orbit.",
-      "For orbital payloads this zone matters because it drives upset risk, detector noise events, and operational constraints across passes.",
-      "A mission reader for this topic helps connect orbital location, timing windows, and measured radiation behavior into one narrative.",
+      "The South Atlantic Anomaly is a region where Earth's magnetic field weakens, allowing trapped high-energy particles to dip into lower orbits than anywhere else on the planet.",
+      "For spacecraft, this zone drives radiation exposure, detector noise events, and operational constraints that mission designers have to account for from the start.",
+      "Antara's payload architecture is built around what happens when the satellite crosses this region, orbit after orbit.",
     ],
   },
   {
-    title: "Meet Antara, and the team",
+    title: "Meet Antara",
     caption:
-      "A strong systems-led visual language for spacecraft surfaces, structure, and mission scale.",
+      "Systems integration is where a spacecraft stops being a collection of parts and starts being a mission.",
     src: "https://www.nasa.gov/wp-content/uploads/2023/03/iss065e049854-1.jpg?w=1041",
     topic: "Systems Integration",
     details: [
-      "Mission execution depends on integration between payload, ADCS, ground station, and data handling, not isolated subsystem performance.",
-      "Team structure should map to interface boundaries so engineering decisions remain auditable and testable during review cycles.",
-      "This reader view frames the gallery image as an entry point into operational discipline and system-level ownership.",
+      "A satellite is only as good as its interfaces. Payload, ADCS, ground station, and power systems all have to talk to each other and all have to work at the same time.",
+      "The Antara team is structured around interface boundaries so that when something goes wrong, we know exactly where to look.",
+      "This is what 23 students are building together: not individual subsystems, but a spacecraft that works as one.",
     ],
   },
   {
-    title: "Earth Observation Texture",
+    title: "Earth from Orbit",
     caption:
-      "A reference for mapping, overlays, and science-forward planetary surfaces in the mission story.",
+      "The view from where Antara will be working.",
     src: "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/image/earth-%28a%29/Earth%20%28A%29.jpg",
-    topic: "Mapping and Analysis",
+    topic: "Orbital Science",
     details: [
-      "Raw telemetry becomes useful when aligned with ground track, pass geometry, and timestamped context for each observation window.",
-      "Map overlays allow pattern detection across orbital segments and make anomaly interpretation more consistent between mission runs.",
-      "The goal is to move from visual texture to operational insight with clear assumptions and repeatable interpretation steps.",
+      "From Low Earth Orbit, the geometry of every measurement matters, ground track, pass timing, orbital altitude, and spacecraft attitude all shape what the payload sees.",
+      "Antara's data products are designed to align measurements with orbital context so that analysis is repeatable and interpretable across passes.",
+      "The goal is to move from raw telemetry to spatial radiation maps that actually mean something.",
     ],
   },
 ];
@@ -382,30 +368,30 @@ const miniProjects: MiniProject[] = [
   {
     page: "ground-station",
     eyebrow: "Mini-Project 01",
-    title: "Ground-Station",
+    title: "Ground Station",
     summary:
-      "Build out the communications and operational layer that lets the mission speak back to Earth through tracking, signal flow, and data handling.",
+      "Build the communications and operations layer that lets the mission speak back to Earth. Tracking, signal flow, telemetry handling, and the interfaces that a student team can actually operate.",
     intro:
-      "The ground-station track focuses on the infrastructure, workflows, and operations interface that connect the spacecraft to the team on the ground.",
+      "The ground station track is about building the infrastructure that connects Antara to the team on the ground. Tracking, telemetry, and the operational discipline to use both.",
     bullets: [
-      "Antenna and tracking workflow studies",
-      "Telemetry visualization and downlink architecture",
-      "Ground-side testing and student operations planning",
+      "Antenna selection and tracking workflow design",
+      "Telemetry visualisation and downlink architecture",
+      "Student operations planning and mission rehearsal",
     ],
     systems: [
       "Tracking workflow and antenna planning",
-      "Packet handling, telemetry parsing, and operator UI",
-      "Mission rehearsals and pass scheduling",
+      "Telemetry visualisation and downlink architecture",
+      "Student operations planning and mission rehearsal",
     ],
     deliverables: [
-      "A pass-planning dashboard prototype",
-      "A structured telemetry display workflow",
-      "A documented ground-ops checklist for student operators",
+      "A pass-planning dashboard prototype a student operator can actually use",
+      "A structured telemetry display workflow with documented assumptions",
+      "A ground-ops checklist built for the Antara team, not a generic one",
     ],
     timeline: [
-      "Research and station architecture mapping",
-      "Prototype telemetry and tracking visualizations",
-      "Operations validation and workflow testing",
+      "Research and ground station architecture mapping",
+      "Prototype telemetry and tracking visualisations",
+      "Operations validation and workflow testing with the full team",
     ],
   },
   {
@@ -413,57 +399,57 @@ const miniProjects: MiniProject[] = [
     eyebrow: "Mini-Project 02",
     title: "Payload Development",
     summary:
-      "Focus on the detector stack, shielding decisions, electronics integration, and how payload measurements become usable science products.",
+      "Design the detector stack, make shielding decisions, integrate the electronics, and build the pipeline that turns raw measurements into usable science.",
     intro:
-      "The payload development track is where the science becomes tangible through detector packaging, electronics, shielding, and data quality.",
+      "The payload is where Antara's science lives. This track is about understanding the detector, making real shielding decisions, and building the data pipeline from the first measurement to the final product.",
     bullets: [
-      "Detector and shielding trade studies",
-      "Electronics packaging and interfaces",
-      "Radiation data interpretation pipelines",
+      "Detector and shielding trade studies grounded in the mission environment",
+      "Electronics packaging and interface design",
+      "Calibration workflows and data interpretation pipelines",
     ],
     systems: [
-      "Detector stack architecture",
-      "Shielding and electronics packaging",
-      "Data handling and calibration workflow",
+      "Detector stack architecture and component selection",
+      "Shielding analysis and electronics packaging",
+      "Data handling, calibration, and quality workflow",
     ],
     deliverables: [
-      "Payload packaging concept drawings",
-      "Detector and shielding trade study notes",
-      "A draft pipeline for translating measurements into usable plots",
+      "Payload packaging concept drawings with dimensions and interface notes",
+      "Detector and shielding trade study documentation",
+      "A draft pipeline for translating raw measurements into interpretable plots",
     ],
     timeline: [
-      "Detector concept and requirements framing",
+      "Detector concept and requirements definition",
       "Electronics and shielding packaging iteration",
-      "Data-readout and interpretation pass",
+      "Data readout, calibration, and interpretation review",
     ],
   },
   {
     page: "adcs",
     eyebrow: "Mini-Project 03",
-    title: "Attitude Control and Determination System",
+    title: "Attitude Control and Determination",
     summary:
-      "Explore how the spacecraft understands and manages orientation, stabilizes operations, and supports mission pointing and control logic.",
+      "Understand how a spacecraft knows where it's pointing and how it gets there. Sensors, actuators, control logic, and the simulation environment to validate all of it.",
     intro:
-      "The ADCS track looks at how the spacecraft senses orientation, responds to control logic, and supports stable mission operations.",
+      "The ADCS track is about understanding how a spacecraft knows where it's pointing and how it corrects itself when it doesn't. Sensors, actuators, control logic, and the simulation environment to test all of it before anything flies.",
     bullets: [
-      "Sensor and actuator architecture exploration",
+      "Sensor and actuator architecture for a CubeSat in LEO",
       "Pointing logic and onboard control concepts",
       "Simulation-driven systems validation",
     ],
     systems: [
-      "Sensing and state estimation concepts",
+      "Sensing and state estimation, knowing where you are before you try to move",
       "Actuator selection and control logic",
-      "Simulation and validation environment",
+      "Simulation and validation environment for orientation testing",
     ],
     deliverables: [
-      "An ADCS architecture map",
+      "An ADCS architecture map with sensor and actuator selections justified",
       "Initial control-loop concept documentation",
-      "A simulation outline for orientation testing",
+      "A simulation outline for orientation and disturbance testing",
     ],
     timeline: [
-      "Requirements and disturbance study",
-      "Sensor-actuator trade exploration",
-      "Control validation and systems review",
+      "Requirements review and disturbance environment study",
+      "Sensor-actuator trade exploration and selection",
+      "Control loop validation and systems-level review",
     ],
   },
 ];
@@ -473,14 +459,14 @@ const monthlyIssues: NewsletterIssue[] = [
     month: "June 2026",
     title: "What is Antara?",
     summary:
-      "A kickoff issue covering the current Antara narrative direction, subsystem framing, and upcoming technical priorities.",
+      "The first issue. Where the mission came from, what we're building, and who is building it, written for anyone who's just heard of us.",
     pdfUrl: "/newsletter.pdf",
   },
   {
     month: "July 2026",
-    title: "Structures, Mission Timeline, and Integration Readiness",
+    title: "Structures, Integration, and the Timeline Ahead",
     summary:
-      "An upcoming issue for integration status, events, subsystem ownership, and milestone planning.",
+      "Integration status, subsystem ownership, milestone planning, and what it actually takes to get a student satellite ready for launch review.",
     pdfUrl: "/newsletter.pdf",
   },
 ];
@@ -494,7 +480,7 @@ const homeNavItems: {
   { label: "About", section: "about", href: "/#about" },
   { label: "Mission", section: "mission", href: "/#mission" },
   { label: "Team", section: "team", href: "/#team" },
-  { label: "Blogs", section: "blogs", href: "/#blogs" },
+  { label: "Logs", section: "blogs", href: "/#blogs" },
   { label: "Gallery", section: "blogs", href: "/#gallery" },
   { label: "Contact", section: "team", href: "/#footer" },
 ];
@@ -515,8 +501,8 @@ const sceneVisibility = (progress: number, index: number, total: number) => {
   const start = index / total;
   const end = (index + 1) / total;
   const local = clamp((progress - start) / (end - start));
-
-  return clamp(Math.sin(local * Math.PI));
+  const centered = 1 - Math.abs(local * 2 - 1);
+  return 0.92 + centered * 0.08;
 };
 
 const escapeHtml = (value: string) =>
@@ -806,16 +792,24 @@ function SiteHeader({
   menuOpen,
   onToggleMenu,
   navBehavior,
+  activeSection = "",
 }: {
   progress: number;
   menuOpen: boolean;
   onToggleMenu: () => void;
   navBehavior: "scroll" | "always";
+  activeSection?: string;
 }) {
   const [showFloatingNav, setShowFloatingNav] = useState(
     navBehavior === "always",
   );
   const previousYRef = useRef(0);
+  const sceneIndex =
+    navBehavior === "scroll" ? Math.min(Math.floor(progress * 10), 9) : 0;
+  const sceneLabel =
+    navBehavior === "scroll" && progress >= 1
+      ? "Archive"
+      : `Scene ${sceneIndex + 1} / 10`;
 
   useEffect(() => {
     if (navBehavior === "always") {
@@ -849,31 +843,47 @@ function SiteHeader({
         <button
           type="button"
           className="mission-hud__menu-toggle"
+          aria-label="Toggle menu"
           aria-expanded={menuOpen}
           aria-controls="side-menu-panel"
           onClick={onToggleMenu}
         >
-      ☰
-     </button>
+          <svg
+            className="mission-hud__menu-icon"
+            viewBox="0 0 18 14"
+            aria-hidden="true"
+          >
+            <line x1="0.75" y1="1" x2="17.25" y2="1" />
+            <line x1="0.75" y1="7" x2="17.25" y2="7" />
+            <line x1="0.75" y1="13" x2="17.25" y2="13" />
+          </svg>
+        </button>
         <SmartLink
           className="mission-hud__brand mission-hud__brand-link"
           href="/"
         >
-          <span>Project ANTARA</span>
+          <span>Project Antara</span>
         </SmartLink>
-        <div className="mission-hud__meter" aria-hidden="true">
-          <span style={{ transform: `scaleX(${Math.max(progress, 0.02)})` }} />
+        <div className="mission-hud__progress">
+          <div className="mission-hud__meter" aria-hidden="true">
+            <span style={{ transform: `scaleX(${Math.max(progress, 0.02)})` }} />
+          </div>
+          {navBehavior === "scroll" ? (
+            <div className="mission-hud__scene-counter" aria-hidden="true">
+              {sceneLabel}
+            </div>
+          ) : null}
         </div>
       </header>
 
       <nav
-        className={`mission-hud-nav-float${showFloatingNav ? " is-visible" : ""}`}
+        className={`mission-hud-nav-float${showFloatingNav ? " is-visible" : ""}`} 
         aria-label="Primary"
       >
         {homeNavItems.map((item) => (
           <SmartLink
             key={item.label}
-            className="mission-hud__link"
+            className={`mission-hud__link${item.section === activeSection ? " is-active" : ""}`} 
             href={item.href}
           >
             {item.label}
@@ -883,7 +893,15 @@ function SiteHeader({
     </>
   );
 }
-function SideMenu({ page, open }: { page: PageId; open: boolean }) {
+function SideMenu({
+  page,
+  open,
+  onClose,
+}: {
+  page: PageId;
+  open: boolean;
+  onClose: () => void;
+}) {
   const [projectsOpen, setProjectsOpen] = useState(false);
   const miniProjectsActive =
     page === "mini-projects" ||
@@ -908,6 +926,7 @@ function SideMenu({ page, open }: { page: PageId; open: boolean }) {
                 key={item.label}
                 className={`side-menu__link${active ? " is-active" : ""}`}
                 href={item.href}
+                onClick={onClose}
               >
                 {item.label}
               </SmartLink>
@@ -918,7 +937,10 @@ function SideMenu({ page, open }: { page: PageId; open: boolean }) {
               type="button"
               className={`side-menu__link side-menu__group-toggle${miniProjectsActive ? " is-active" : ""}`}
               aria-expanded={submenuOpen}
-              onClick={() => setProjectsOpen((value) => !value)}
+              onClick={() => {
+                setProjectsOpen((value) => !value);
+                onClose();
+              }}
             >
               Mini-Projects
             </button>
@@ -926,6 +948,7 @@ function SideMenu({ page, open }: { page: PageId; open: boolean }) {
               <SmartLink
                 className={`side-menu__sublink${page === "mini-projects" ? " is-active" : ""}`}
                 href="/mini-projects"
+                onClick={onClose}
               >
                 Overview
               </SmartLink>
@@ -934,6 +957,7 @@ function SideMenu({ page, open }: { page: PageId; open: boolean }) {
                   key={project.page}
                   className={`side-menu__sublink${page === project.page ? " is-active" : ""}`}
                   href={`/${project.page}`}
+                  onClick={onClose}
                 >
                   {project.title}
                 </SmartLink>
@@ -943,6 +967,7 @@ function SideMenu({ page, open }: { page: PageId; open: boolean }) {
           <SmartLink
             className={`side-menu__link${page === "newsletter" ? " is-active" : ""}`}
             href="/newsletter"
+            onClick={onClose}
           >
             Newsletter
           </SmartLink>
@@ -957,26 +982,28 @@ function Footer() {
     <footer className="site-footer" id="footer">
       <div className="site-footer__brand">
         <p className="mission-copy__eyebrow">Project Antara</p>
-        <h4>Student-built CubeSat mission from BITS Goa.</h4>
+        <h4>A student-built CubeSat mission from BITS Goa.</h4>
         <p>
-          Antara is framed as a research-forward radiation mission experience,
-          combining scientific storytelling, system design, and public-facing
-          communication.
+          Twenty-three students. One satellite. One very specific region of
+          space we're trying to understand. Antara is a radiation science
+          mission built by the people it's training.
         </p>
       </div>
 
       <div className="site-footer__column">
         <p className="site-footer__heading">Explore</p>
         <SmartLink href="/#mission">Mission</SmartLink>
-        <SmartLink href="/#blogs">Gallery</SmartLink>
-        <SmartLink href="/#about">Partners</SmartLink>
-        <SmartLink href="/#blogs">Newsletter</SmartLink>
+        <SmartLink href="/#gallery">Gallery</SmartLink>
+        <SmartLink href="/partners">Partners</SmartLink>
+        <SmartLink href="/newsletter">Newsletter</SmartLink>
         <SmartLink href="/admin">Admin</SmartLink>
       </div>
 
       <div className="site-footer__column">
         <p className="site-footer__heading">Contact Us</p>
-        <a href="mailto:antara@bits-goa.ac.in">project.antara.25@gmail.com</a>
+        <a href="mailto:project.antara.25@gmail.com">
+          project.antara.25@gmail.com
+        </a>
         <a href="https://www.linkedin.com/company/project-antara">
           LinkedIn: project-antara
         </a>
@@ -988,11 +1015,11 @@ function Footer() {
       </div>
 
       <div className="site-footer__column">
-        <p className="site-footer__heading">Summary</p>
-        <span>Radiation mission narrative</span>
-        <span>CubeSat systems storytelling</span>
-        <span>Student team and mission log</span>
-        <span>Research-first visual identity</span>
+        <p className="site-footer__heading">What Antara Is</p>
+        <span>A CubeSat radiation science mission</span>
+        <span>Student-built at BITS Goa</span>
+        <span>Focused on the South Atlantic Anomaly</span>
+        <span>23 members, actively building</span>
       </div>
     </footer>
   );
@@ -1123,30 +1150,33 @@ function ImageViewer({
           </div>
 
           <div className="image-viewer__toolbar" aria-label="Image controls">
-            <button type="button" onClick={() => setZoom((value) => Math.max(0.6, value - 0.2))}>
-              Zoom -
-            </button>
-            <button type="button" onClick={() => setZoom((value) => Math.min(3, value + 0.2))}>
-              Zoom +
-            </button>
-            <button type="button" onClick={() => setZoom(1)}>
-              Reset
-            </button>
-            <button
-              type="button"
-              onClick={() => setRotation((value) => value - 90)}
-            >
-              Rotate Left
-            </button>
-            <button
-              type="button"
-              onClick={() => setRotation((value) => value + 90)}
-            >
-              Rotate Right
-            </button>
-            <a href={current.src} download target="_blank" rel="noreferrer">
-              Download
-            </a>
+            <div className="image-viewer__toolbar-group">
+              <button type="button" onClick={() => setZoom((value) => Math.max(0.6, value - 0.2))}>
+                −
+              </button>
+              <span className="image-viewer__toolbar-separator" aria-hidden="true" />
+              <button type="button" onClick={() => setZoom((value) => Math.min(3, value + 0.2))}>
+                +
+              </button>
+            </div>
+            <div className="image-viewer__toolbar-group image-viewer__toolbar-group--spaced">
+              <button type="button" onClick={() => setZoom(1)}>
+                Reset
+              </button>
+            </div>
+            <div className="image-viewer__toolbar-group image-viewer__toolbar-group--spaced">
+              <button type="button" onClick={() => setRotation((value) => value - 90)}>
+                ↺
+              </button>
+              <button type="button" onClick={() => setRotation((value) => value + 90)}>
+                ↻
+              </button>
+            </div>
+            <div className="image-viewer__toolbar-group image-viewer__toolbar-group--spaced">
+              <a href={current.src} download target="_blank" rel="noreferrer">
+                ↓ Download
+              </a>
+            </div>
           </div>
 
           <div className="image-viewer__details">
@@ -1261,9 +1291,18 @@ function DocumentReader({
   );
 }
 
-function HomePage({ posts }: { posts: CmsPost[] }) {
+function HomePage({
+  posts,
+  postsResolved,
+}: {
+  posts: CmsPost[];
+  postsResolved: boolean;
+}) {
   const [progress, setProgress] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [scrollHintHidden, setScrollHintHidden] = useState(false);
   const [viewerState, setViewerState] = useState<{
     title: string;
     items: ViewerImage[];
@@ -1271,12 +1310,26 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
   } | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const preloadVideoRef = useRef<HTMLVideoElement | null>(null);
   const targetProgressRef = useRef(0);
   const scrollFrameRef = useRef<number | null>(null);
   const videoFrameRef = useRef<number | null>(null);
   const liveBlogPosts = posts
     .filter((post) => post.category === "blog")
     .slice(0, 6);
+  const handleFinaleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo("#about", {
+        duration: 1.8,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+      return;
+    }
+
+    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1307,6 +1360,41 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
         scrollFrameRef.current = null;
       }
     };
+  }, []);
+
+  useEffect(() => {
+    if (!postsResolved) {
+      return;
+    }
+    setPostsLoading(false);
+  }, [postsResolved]);
+
+  useEffect(() => {
+    setScrollHintHidden(progress > 0.1);
+  }, [progress]);
+
+  useEffect(() => {
+    const targets = ["about", "mission", "team", "blogs", "gallery"]
+      .map((id) => document.getElementById(id))
+      .filter((element): element is HTMLElement => Boolean(element));
+
+    if (targets.length === 0) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection((entry.target as HTMLElement).id);
+          }
+        });
+      },
+      { threshold: 0.3 },
+    );
+
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -1383,6 +1471,7 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
 
   useEffect(() => {
     const video = videoRef.current;
+    const preloadVideo = preloadVideoRef.current;
     if (!video) {
       return;
     }
@@ -1390,6 +1479,9 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
     let cancelled = false;
     video.pause();
     video.currentTime = 0;
+    if (preloadVideo) {
+      preloadVideo.play().catch(() => undefined);
+    }
 
     const tick = () => {
       if (cancelled) {
@@ -1401,7 +1493,14 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
         const targetTime = Math.min(duration - 0.04, duration * targetProgressRef.current);
         const delta = targetTime - video.currentTime;
         if (Math.abs(delta) > 0.01) {
-          const nextTime = video.currentTime + delta * 0.08;
+          const bufferedEnd =
+            video.buffered.length > 0
+              ? video.buffered.end(video.buffered.length - 1)
+              : 0;
+          const safeTarget = bufferedEnd > 0
+            ? Math.min(targetTime, Math.max(0, bufferedEnd - 0.16))
+            : targetTime;
+          const nextTime = video.currentTime + (safeTarget - video.currentTime) * 0.04;
           video.currentTime = Math.max(0, Math.min(duration - 0.04, nextTime));
         }
       }
@@ -1413,6 +1512,7 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
 
     return () => {
       cancelled = true;
+      preloadVideo?.pause();
       if (videoFrameRef.current !== null) {
         window.cancelAnimationFrame(videoFrameRef.current);
         videoFrameRef.current = null;
@@ -1432,6 +1532,17 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
         loop={false}
         aria-hidden="true"
       />
+      <video
+        ref={preloadVideoRef}
+        className="journey-video journey-video--preload"
+        src="/journey.mp4"
+        muted
+        playsInline
+        preload="auto"
+        autoPlay
+        loop
+        aria-hidden="true"
+      />
       <div className="journey-video__overlay" aria-hidden="true" />
 
       <SiteHeader
@@ -1439,8 +1550,21 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
         menuOpen={menuOpen}
         onToggleMenu={() => setMenuOpen((value) => !value)}
         navBehavior="scroll"
+        activeSection={activeSection}
       />
-      <SideMenu page="home" open={menuOpen} />
+      <div
+        className={`scroll-hint${scrollHintHidden ? " is-hidden" : ""}`}
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 24 24" className="scroll-hint__icon" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </div>
+      <SideMenu
+        page="home"
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+      />
 
       <main className="mission-scroll">
         {missionScenes.map((scene, index) => {
@@ -1456,8 +1580,8 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
                 <div
                   className="mission-copy__inner"
                   style={{
-                    opacity: 0.2 + intensity * 0.8,
-                    transform: `translate3d(0, ${40 - intensity * 40}px, 0) scale(${0.96 + intensity * 0.04})`,
+                    opacity: intensity,
+                    transform: `translate3d(0, ${(1 - intensity) * 18}px, 0) scale(${0.99 + (intensity - 0.92) * 0.05})`,
                   }}
                 >
                   <p className="mission-copy__eyebrow">{scene.eyebrow}</p>
@@ -1468,7 +1592,11 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
                     </p>
                   ))}
                   {scene.id === "finale" ? (
-                    <SmartLink className="mission-cta" href="/#about">
+                    <SmartLink
+                      className="mission-cta"
+                      href="/#about"
+                      onClick={handleFinaleClick}
+                    >
                       Explore the Mission
                     </SmartLink>
                   ) : null}
@@ -1481,11 +1609,11 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
         <section className="info-hub" id="about">
           <div className="info-hub__intro">
             <p className="mission-copy__eyebrow">Mission Archive</p>
-            <h2>Antara needs both spectacle and substance.</h2>
+            <h2>There's a lot behind the mission. This is where it lives.</h2>
             <p>
-              The scroll experience pulls people into orbit. The archive below
-              gives them somewhere to stay, read, and understand the actual
-              mission.
+              The scroll pulls you in. But the real story is in the details,
+              the science, the systems, the people, and the progress.
+              Everything below is the actual mission, documented as it happens.
             </p>
           </div>
         </section>
@@ -1506,7 +1634,10 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
                     <span key={fact}>{fact}</span>
                   ))}
                 </div>
-                {section.images ? (
+                {section.images &&
+                section.images.some(
+                  (image) => !image.src.startsWith("data:image/svg+xml"),
+                ) ? (
                   <div className="archive-section__images">
                     {section.images.map((image, index) => (
                       <button
@@ -1558,16 +1689,69 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
         <section className="gallery-section" id="blogs">
           <div className="database-feed">
             <div className="database-feed__intro">
-              <p className="mission-copy__eyebrow">Blogs + Live Posts</p>
-              <h2>
-                Mission updates and dynamic blog posts in one archive section.
-              </h2>
+              <p className="mission-copy__eyebrow">Logs + Live Posts</p>
+              <h2>What we're working on, written as it happens.</h2>
+              <p>No summaries, no spin. Just the mission, documented in real time.</p>
             </div>
             <div className="database-feed__grid">
-              {liveBlogPosts.length > 0 ? (
+              {postsLoading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <article key={`blog-skeleton-${index}`} className="database-feed__card database-feed__card--skeleton">
+                    <div
+                      className="database-feed__skeleton-line"
+                      style={{ width: "40%", height: 12, marginBottom: 12 }}
+                    />
+                    <div
+                      className="database-feed__skeleton-line"
+                      style={{ width: "80%", height: 20, marginBottom: 12 }}
+                    />
+                    <div
+                      className="database-feed__skeleton-line"
+                      style={{ width: "100%", height: 12, marginBottom: 8 }}
+                    />
+                    <div
+                      className="database-feed__skeleton-line"
+                      style={{ width: "70%", height: 12 }}
+                    />
+                  </article>
+                ))
+              ) : liveBlogPosts.length > 0 ? (
                 liveBlogPosts.map((post) => (
                   <article key={post.id} className="database-feed__card">
-                    <p>{new Date(post.publishedAt).toLocaleDateString()}</p>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "0.25rem",
+                      }}
+                    >
+                      <span>
+                        {new Date(post.publishedAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          padding: "3px 8px",
+                          borderRadius: "4px",
+                          marginLeft: "8px",
+                          background:
+                            post.category === "newsletter"
+                              ? "var(--color-background-success)"
+                              : "var(--color-background-info)",
+                          color:
+                            post.category === "newsletter"
+                              ? "var(--color-text-success)"
+                              : "var(--color-text-info)",
+                        }}
+                      >
+                        {post.category.replace(/-/g, " ")}
+                      </span>
+                    </div>
                     <h3>
                       <SmartLink
                         className="database-feed__card-link"
@@ -1594,10 +1778,10 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
               ) : (
                 <article className="database-feed__card">
                   <p>Database</p>
-                  <h3>No live blog posts yet.</h3>
+                  <h3>The first log entry is coming.</h3>
                   <span>
-                    Upload your first post via `POST /api/posts`, and it will
-                    appear here automatically.
+                    We're building. The documentation follows. Check back soon,
+                    or subscribe to the newsletter to hear when we post.
                   </span>
                 </article>
               )}
@@ -1605,7 +1789,8 @@ function HomePage({ posts }: { posts: CmsPost[] }) {
           </div>
           <div className="gallery-section__intro" id="gallery">
             <p className="mission-copy__eyebrow">Gallery</p>
-            <h2>Visual references, mission mood, and systems-first imagery.</h2>
+            <h2>The mission, in images.</h2>
+            <p>Hardware, orbit, and the places Antara is designed to study.</p>
           </div>
           <div className="gallery-grid">
             {galleryItems.map((item) => (
@@ -1723,8 +1908,13 @@ function StandardPage({
         menuOpen={menuOpen}
         onToggleMenu={() => setMenuOpen((value) => !value)}
         navBehavior="always"
+        activeSection=""
       />
-      <SideMenu page={page} open={menuOpen} />
+      <SideMenu
+        page={page}
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+      />
       <main className="subpage-main">
         <section className="page-hero">
           <p className="mission-copy__eyebrow">{eyebrow}</p>
@@ -1743,40 +1933,42 @@ function PartnersPage() {
     <StandardPage
       page="partners"
       eyebrow="Partners"
-      title="Support the mission and help Antara grow into a credible student space program."
-      intro="This page is designed for institutions, sponsors, technical partners, and alumni who want to support Antara through funding, mentorship, infrastructure, or visibility."
+      title="Help us get Antara to orbit."
+      intro="Building a satellite as a student team is possible. It's also genuinely hard. The right partners, whether through funding, hardware, mentorship, or visibility, make the difference between a mission that launches and one that doesn't."
     >
       <section className="page-section">
         <div className="two-column-grid">
           <article className="content-panel">
-            <p className="panel-eyebrow">Partnership Tracks</p>
-            <h2>Where support can make a real difference.</h2>
+            <p className="panel-eyebrow">Where support makes a real difference</p>
+            <h2>Three ways to back a student space mission.</h2>
             <ul className="content-list">
               <li>
-                Payload prototyping, detector hardware, and shielding
-                development.
+                Payload hardware, detector components, shielding materials, and
+                fabrication resources for the spacecraft itself.
               </li>
               <li>
-                Ground-station support, communications infrastructure, and
-                testing tools.
+                Ground-station infrastructure, communications equipment, and
+                testing tools that let us operate the mission from campus.
               </li>
               <li>
-                Student travel, outreach events, fabrication resources, and
-                mission reviews.
+                Student travel, conference attendance, outreach events, and
+                mission reviews that connect Antara to the broader space
+                community.
               </li>
             </ul>
           </article>
           <article className="content-panel content-panel--accent">
-            <p className="panel-eyebrow">Get In Touch</p>
-            <h2>Funding, collaboration, or technical support.</h2>
+            <p className="panel-eyebrow">Ready to talk?</p>
+            <h2>Reach out with what you have in mind.</h2>
             <p className="content-copy">
-              If you are interested in backing Antara, reach out with your
-              organization, area of interest, and what kind of support you have
-              in mind.
+              If you're interested in supporting Antara as a funder, a technical
+              collaborator, or a community partner, we'd like to hear from you.
+              Tell us who you are, what you do, and how you think you might
+              help.
             </p>
             <div className="contact-stack">
-              <a href="mailto:antara@bits-goa.ac.in?subject=Antara%20Partnership%20Inquiry">
-                antara@bits-goa.ac.in
+              <a href="mailto:project.antara.25@gmail.com?subject=Antara%20Partnership%20Inquiry">
+                project.antara.25@gmail.com
               </a>
               <a href="tel:+919999999999">+91 99999 99999</a>
               <span>BITS Pilani, K K Birla Goa Campus, Goa</span>
@@ -1785,20 +1977,22 @@ function PartnersPage() {
         </div>
         <div className="two-column-grid" style={{ marginTop: "1.25rem" }}>
           <article className="content-panel">
-            <p className="panel-eyebrow">Partnership Tiers</p>
-            <h2>Three ways to get involved.</h2>
+            <p className="panel-eyebrow">How partnerships work</p>
+            <h2>Support that maps to the mission.</h2>
             <ul className="content-list">
-              <li>Technical collaborators who help review subsystem design and test plans.</li>
-              <li>Sponsors who support hardware, travel, and fabrication costs.</li>
-              <li>Community partners who amplify the mission through events, mentorship, or shared resources.</li>
+              <li>Technical partners who review subsystem designs, attend test sessions, and help us avoid the expensive mistakes.</li>
+              <li>Sponsors who cover hardware, fabrication, and travel costs that make the mission physically possible.</li>
+              <li>Community partners who share Antara's story with students who might join, and institutions who might collaborate.</li>
             </ul>
           </article>
           <article className="content-panel content-panel--accent">
-            <p className="panel-eyebrow">Working Style</p>
-            <h2>How partnerships move forward.</h2>
+            <p className="panel-eyebrow">How we work with partners</p>
+            <h2>Specific support produces specific outcomes.</h2>
             <p className="content-copy">
-              Antara works best when support maps to a specific subsystem, milestone, or public outcome.
-              That makes it easier to show progress and keep collaborators close to the actual mission work.
+              The most effective partnerships we have seen attach to a real
+              milestone, a test, a review, a launch window, rather than the
+              mission in general. That gives partners something concrete to
+              point to, and gives us something real to deliver.
             </p>
           </article>
         </div>
@@ -1813,25 +2007,25 @@ function EventsPage() {
       phase: "April 2026",
       title: "Mission Narrative and Website Launch",
       detail:
-        "Public-facing mission framing, media system, and section architecture go live.",
+        "Antara goes public. The mission framing, subsystem architecture, and team structure are documented and shared for the first time.",
     },
     {
       phase: "May 2026",
-      title: "Subsystem Orientation and Team Reviews",
+      title: "Subsystem Reviews and Team Orientation",
       detail:
-        "Internal reviews for mission architecture, subsystem scope, and project ownership.",
+        "Internal reviews for mission architecture, interface definitions, and subsystem ownership. Every lead walks in with a scope; everyone walks out with a plan.",
     },
     {
       phase: "June 2026",
       title: "Payload and Ground Segment Workshops",
       detail:
-        "Hands-on mini-project and payload development sessions for new contributors.",
+        "Hands-on sessions for new contributors joining the payload development and ground station tracks. Build first, document second.",
     },
     {
       phase: "July 2026",
-      title: "Partner Outreach and Technical Showcase",
+      title: "Partner Showcase and Technical Update",
       detail:
-        "A sponsor-facing update presenting mission direction, mini-project progress, and next milestones.",
+        "A sponsor-facing session presenting mission direction, mini-project progress, and the next set of milestones. Open to institutions and organisations interested in supporting Antara.",
     },
   ];
 
@@ -1839,8 +2033,8 @@ function EventsPage() {
     <StandardPage
       page="events"
       eyebrow="Events"
-      title="A public timeline for mission activity, reviews, and milestones."
-      intro="The events page tracks what Antara is doing over time, from internal reviews to workshops and sponsor-facing presentations."
+      title="Where the mission has been, and where it's going."
+      intro="This is the public record of Antara's timeline, reviews, workshops, partner sessions, and the milestones that mark progress from concept to launch."
     >
       <section className="page-section">
         <div className="timeline">
@@ -1854,20 +2048,21 @@ function EventsPage() {
         </div>
         <div className="two-column-grid" style={{ marginTop: "1.25rem" }}>
           <article className="content-panel content-panel--accent">
-            <p className="panel-eyebrow">Recent Rhythm</p>
-            <h2>What the team is trying to keep alive every month.</h2>
+            <p className="panel-eyebrow">What we try to do every month</p>
+            <h2>Reviews that produce something. Sessions that leave an artifact.</h2>
             <ul className="content-list">
-              <li>Subsystem reviews with concrete action items.</li>
-              <li>Build and test sessions that produce visible artifacts.</li>
-              <li>Public updates that keep the mission legible to supporters.</li>
+              <li>Subsystem reviews with concrete action items and a named owner for each one.</li>
+              <li>Build and test sessions that end with something tangible, a prototype, a test result, a documented trade-off.</li>
+              <li>Public updates that give sponsors and collaborators an honest picture of where the mission actually is.</li>
             </ul>
           </article>
           <article className="content-panel">
-            <p className="panel-eyebrow">Next Steps</p>
-            <h2>What usually comes after an event.</h2>
+            <p className="panel-eyebrow">What happens next</p>
+            <h2>Events are checkpoints, not conclusions.</h2>
             <p className="content-copy">
-              Each event should lead to a clearer owner, a tighter timeline, or a better prototype.
-              The site now has room to report those outcomes rather than just the date on the calendar.
+              The goal of every Antara event is a clearer owner, a tighter plan,
+              or a better prototype. The site is where those outcomes get
+              recorded, not just the date on the calendar.
             </p>
           </article>
         </div>
@@ -1881,8 +2076,8 @@ function MiniProjectsPage() {
     <StandardPage
       page="mini-projects"
       eyebrow="Mini-Projects"
-      title="Three focused build tracks expanding the Antara ecosystem."
-      intro="This page extends the main mission language into smaller engineering efforts that students can own, prototype, and grow into serious subsystems."
+      title="Three focused build tracks. Real engineering problems. Student-owned."
+      intro="The mini-projects extend Antara's mission into bounded, manageable tracks that a small group of students can own completely. They feed into the main spacecraft and they're real work, not exercises."
     >
       <section className="page-section">
         <div className="project-grid">
@@ -1907,20 +2102,21 @@ function MiniProjectsPage() {
         </div>
         <div className="two-column-grid" style={{ marginTop: "1.25rem" }}>
           <article className="content-panel">
-            <p className="panel-eyebrow">Why These Tracks Exist</p>
-            <h2>Mini-projects are the on-ramp.</h2>
+            <p className="panel-eyebrow">Why mini-projects exist</p>
+            <h2>The on-ramp for serious contributors.</h2>
             <p className="content-copy">
-              They let newer contributors work on a bounded problem while still feeding into the larger mission architecture.
-              That makes the site feel like a live engineering program instead of a static brochure.
+              Mini-projects give newer members a bounded problem to solve that
+              still connects to the real mission. The work is scoped. The output
+              is reviewable. And the best ideas make it into the spacecraft.
             </p>
           </article>
           <article className="content-panel content-panel--accent">
-            <p className="panel-eyebrow">Expected Output</p>
-            <h2>Each track should leave a trail.</h2>
+            <p className="panel-eyebrow">Expected output</p>
+            <h2>Every track should leave a trail.</h2>
             <ul className="content-list">
-              <li>A diagram, prototype, or workflow artifact.</li>
-              <li>A reviewable set of notes and assumptions.</li>
-              <li>A clearer next step for the subsystem lead.</li>
+              <li>A diagram, prototype, or workflow that a reviewer can actually assess.</li>
+              <li>A documented set of assumptions and trade-offs, not just conclusions.</li>
+              <li>A clearer next step that the subsystem lead can act on.</li>
             </ul>
           </article>
         </div>
@@ -1999,12 +2195,6 @@ function NewsletterPage({ posts }: { posts: CmsPost[] }) {
     pdfUrl: string;
     pageLabel?: string;
   } | null>(null);
-  const [subscriberCount, setSubscriberCount] = useState(() => {
-    const saved = JSON.parse(
-      window.localStorage.getItem("antara-newsletter-subscribers") ?? "[]",
-    ) as string[];
-    return saved.length;
-  });
   const liveNewsletterPosts = posts
     .filter((post) => post.category === "newsletter")
     .slice(0, 6);
@@ -2038,35 +2228,44 @@ function NewsletterPage({ posts }: { posts: CmsPost[] }) {
       return;
     }
 
-    const saved = JSON.parse(
-      window.localStorage.getItem("antara-newsletter-subscribers") ?? "[]",
-    ) as string[];
-    const next = Array.from(new Set([...saved, trimmed]));
-    window.localStorage.setItem(
-      "antara-newsletter-subscribers",
-      JSON.stringify(next),
-    );
-    setSubscriberCount(next.length);
-    setEmail("");
-    setStatus("You are on the Antara newsletter list for this prototype.");
+    fetch("https://formspree.io/f/xojblvpo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ email: trimmed }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Formspree submission failed.");
+        }
+        setEmail("");
+        setStatus("You're on the list. We'll be in touch.");
+      })
+      .catch(() => {
+        setStatus(
+          "Something went wrong. Email us directly at project.antara.25@gmail.com",
+        );
+      });
   };
 
   return (
     <StandardPage
       page="newsletter"
       eyebrow="Newsletter"
-      title="Monthly mission updates, directly to interested supporters and students."
-      intro="This page collects subscriber emails and acts as the public home for monthly Antara newsletter issues."
+      title="Monthly updates from the mission, written plainly."
+      intro="No spin. No press release language. Just an honest account of where Antara is, what we built last month, and what we're working on next. Once a month, directly to you."
     >
       <section className="page-section">
         <div className="two-column-grid">
           <article className="content-panel content-panel--accent">
             <p className="panel-eyebrow">Subscribe</p>
-            <h2>Join the monthly update list.</h2>
+            <h2>Get the monthly mission brief.</h2>
             <form className="newsletter-form" onSubmit={handleSubmit}>
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Your email address"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 aria-label="Email address"
@@ -2074,13 +2273,12 @@ function NewsletterPage({ posts }: { posts: CmsPost[] }) {
               <button type="submit">Sign Up</button>
             </form>
             <p className="content-copy">
-              {status ||
-                `${subscriberCount} subscribers saved in this local prototype.`}
+              {status || "No cost, no noise. One email a month."}
             </p>
           </article>
           <article className="content-panel">
-            <p className="panel-eyebrow">Monthly Issues</p>
-            <h2>Published updates and upcoming notes.</h2>
+            <p className="panel-eyebrow">Archive</p>
+            <h2>Past issues and upcoming editions.</h2>
             <div className="issue-grid">
               {liveNewsletterPosts.length > 0
                 ? liveNewsletterPosts.map((post) => (
@@ -2125,20 +2323,21 @@ function NewsletterPage({ posts }: { posts: CmsPost[] }) {
         </div>
         <div className="two-column-grid" style={{ marginTop: "1.25rem" }}>
           <article className="content-panel">
-            <p className="panel-eyebrow">Newsletter Direction</p>
-            <h2>Editorially, it should feel like a mission brief.</h2>
+            <p className="panel-eyebrow">What to expect</p>
+            <h2>Written like the mission brief it is.</h2>
             <p className="content-copy">
-              Short, specific, and useful updates tend to age better than broad status posts.
-              This page now has room for that tone, plus a PDF reader for deeper archive issues.
+              Short, specific, honest. Each issue covers what happened, what it
+              means, and what's next. It ages well because it's tied to real
+              milestones, not a content calendar.
             </p>
           </article>
           <article className="content-panel content-panel--accent">
-            <p className="panel-eyebrow">Distribution</p>
-            <h2>What a newsletter issue can include.</h2>
+            <p className="panel-eyebrow">Typical content</p>
+            <h2>A newsletter issue can hold a lot.</h2>
             <ul className="content-list">
-              <li>Subsystem milestones and build notes.</li>
-              <li>Event announcements and sponsor updates.</li>
-              <li>PDF archives for readers who want the full issue.</li>
+              <li>Subsystem milestones, build notes, and test results, the work as it happens.</li>
+              <li>Event announcements and sponsor updates that give supporters a reason to stay close.</li>
+              <li>PDF archives for readers who want the full issue, not just the highlights.</li>
             </ul>
           </article>
         </div>
@@ -2171,8 +2370,8 @@ function PostPage({
       <StandardPage
         page="post"
         eyebrow="Mission Post"
-        title="Loading mission post..."
-        intro="Fetching article content from the Antara CMS."
+        title="Loading this entry..."
+        intro="One moment while we pull the post from the archive."
       >
         <section className="page-section">
           <article className="content-panel">
@@ -2188,8 +2387,8 @@ function PostPage({
       <StandardPage
         page="post"
         eyebrow="Mission Post"
-        title="Post not found"
-        intro="This mission post may be unpublished, moved, or unavailable."
+        title="This entry isn't here."
+        intro="It may be unpublished, moved, or not yet written. Head back to the mission log to find what you're looking for."
       >
         <section className="page-section">
           <article className="content-panel content-panel--accent">
@@ -2215,7 +2414,7 @@ function PostPage({
       page="post"
       eyebrow={categoryLabel}
       title={post.title}
-      intro={post.excerpt || "Mission post entry from the Antara CMS."}
+      intro={post.excerpt || "Mission post from Project Antara."}
     >
       <section className="page-section">
         <div className="post-layout">
@@ -2244,10 +2443,10 @@ function PostPage({
           </article>
           <aside className="content-panel content-panel--accent">
             <p className="panel-eyebrow">Mission Log</p>
-            <h2>Explore More Entries</h2>
+            <h2>More from Antara</h2>
             <p className="content-copy">
-              Continue through the main mission page for more logs, gallery
-              items, and project updates.
+              Head back to the mission log for more entries, build updates,
+              technical explainers, and progress notes from across the team.
             </p>
             <SmartLink className="project-card__link" href="/#blogs">
               Open Mission Log
@@ -2601,15 +2800,15 @@ function AdminPage() {
     <StandardPage
       page="admin"
       eyebrow="Admin"
-      title="Antara CMS Admin Dashboard"
-      intro="Login to create, edit, publish, unpublish, and delete posts without manual API calls."
+      title="Antara Content Dashboard"
+      intro="Manage mission posts, newsletter entries, and published content. Authenticated access only."
     >
       {!token ? (
         <section className="page-section">
           <div className="two-column-grid">
             <article className="content-panel content-panel--accent">
-              <p className="panel-eyebrow">Admin Login</p>
-              <h2>Restricted access</h2>
+              <p className="panel-eyebrow">Restricted Access</p>
+              <h2>Sign in to continue.</h2>
               <form className="admin-form" onSubmit={handleLogin}>
                 <input
                   type="text"
@@ -2628,18 +2827,16 @@ function AdminPage() {
                 <button type="submit">Login</button>
               </form>
               <p className="content-copy">
-                {authStatus || "Only authenticated users can manage content."}
+                {authStatus || "Only authenticated team members can manage content."}
               </p>
             </article>
             <article className="content-panel">
-              <p className="panel-eyebrow">Capabilities</p>
-              <h2>Admin operations</h2>
+              <p className="panel-eyebrow">What you can do here</p>
+              <h2>Full content management.</h2>
               <ul className="content-list">
-                <li>Create posts with draft/published states.</li>
-                <li>Edit content, SEO fields, and optional attachments.</li>
-                <li>
-                  Delete outdated posts and toggle publish status quickly.
-                </li>
+                <li>Create posts in draft or published state, with categories and scheduling.</li>
+                <li>Edit content, SEO fields, cover images, and file attachments.</li>
+                <li>Toggle publish status, delete outdated entries, and run database backups.</li>
               </ul>
             </article>
           </div>
@@ -2897,6 +3094,7 @@ export default function App() {
   const [route, setRoute] = useState<RouteInfo>(() => getRouteFromLocation());
   const [posts, setPosts] = useState<CmsPost[]>([]);
   const [postsError, setPostsError] = useState("");
+  const [postsResolved, setPostsResolved] = useState(false);
   const [postDetail, setPostDetail] = useState<CmsPostDetail | null>(null);
   const [postDetailError, setPostDetailError] = useState("");
   const [postDetailLoading, setPostDetailLoading] = useState(false);
@@ -2969,6 +3167,10 @@ export default function App() {
             error instanceof Error ? error.message : "Failed to load posts",
           );
         }
+      } finally {
+        if (active) {
+          setPostsResolved(true);
+        }
       }
     };
 
@@ -3032,49 +3234,49 @@ export default function App() {
       { title: string; description: string }
     > = {
       home: {
-        title: "Project Antara | Student-Built CubeSat Mission",
+        title: "Project Antara - Student-Built CubeSat Mission, BITS Goa",
         description:
-          "Project Antara is a BITS Goa student-built CubeSat mission focused on radiation studies, systems engineering, and mission storytelling.",
+          "Project Antara is a BITS Goa student-built CubeSat studying radiation in Low Earth Orbit, with a focus on the South Atlantic Anomaly. Twenty-three students. One satellite.",
       },
       partners: {
-        title: "Partners | Project Antara",
+        title: "Partners - Project Antara",
         description:
-          "Support Project Antara through sponsorship, technical collaboration, and mission partnership opportunities.",
+          "Support Project Antara through sponsorship, hardware, technical collaboration, or mentorship. Help a student satellite reach orbit.",
       },
       events: {
-        title: "Events | Project Antara",
+        title: "Events - Project Antara",
         description:
-          "Track Antara events, reviews, workshops, and mission timeline milestones.",
+          "The public timeline of Antara milestones, subsystem reviews, workshops, partner sessions, and launch preparation.",
       },
       "mini-projects": {
-        title: "Mini-Projects | Project Antara",
+        title: "Mini-Projects - Project Antara",
         description:
-          "Explore Antara mini-project tracks across Ground Station, Payload Development, and ADCS.",
+          "Three student-owned engineering tracks, Ground Station, Payload Development, and ADCS, that feed directly into the Antara spacecraft.",
       },
       "ground-station": {
-        title: "Ground Station Mini-Project | Project Antara",
+        title: "Ground Station Mini-Project - Project Antara",
         description:
-          "Ground Station mini-project scope, systems, deliverables, and implementation timeline.",
+          "Build the communications and operations layer that connects Antara to the team on the ground. Tracking, telemetry, and student-run mission ops.",
       },
       "payload-development": {
-        title: "Payload Development Mini-Project | Project Antara",
+        title: "Payload Development Mini-Project - Project Antara",
         description:
-          "Payload Development mini-project details, architecture focus, and deliverables.",
+          "Design the detector stack, make shielding decisions, and build the pipeline from raw measurements to usable science data.",
       },
       adcs: {
-        title: "ADCS Mini-Project | Project Antara",
+        title: "Attitude Control and Determination - Project Antara",
         description:
-          "Attitude Control and Determination System mini-project details and roadmap.",
+          "Sensors, actuators, control logic, and simulation for a CubeSat that knows where it's pointing and can correct itself when it doesn't.",
       },
       newsletter: {
-        title: "Newsletter | Project Antara",
+        title: "Newsletter - Project Antara",
         description:
-          "Subscribe to Project Antara monthly updates and mission progress newsletters.",
+          "Monthly mission updates from the Antara team. Honest progress notes, subsystem milestones, and the occasional hard lesson.",
       },
       admin: {
-        title: "Admin Dashboard | Project Antara",
+        title: "Admin Dashboard - Project Antara",
         description:
-          "Authenticated Project Antara CMS dashboard for creating and managing mission posts.",
+          "Authenticated content management dashboard for the Antara mission team.",
       },
     };
 
@@ -3139,8 +3341,8 @@ export default function App() {
 
     if (page === "post") {
       const fallbackTitle = postSlug
-        ? `${postSlug.replace(/-/g, " ")} | Project Antara`
-        : "Mission Post | Project Antara";
+        ? `${postSlug.replace(/-/g, " ")} - Project Antara`
+        : "Mission Log - Project Antara";
       const postTitle =
         postDetail?.seoTitle || postDetail?.title || fallbackTitle;
       const postDescription =
@@ -3248,7 +3450,7 @@ export default function App() {
           />
         );
       default:
-        return <HomePage posts={posts} />;
+        return <HomePage posts={posts} postsResolved={postsResolved} />;
     }
   }, [page, postSlug, posts, postDetail, postDetailError, postDetailLoading]);
 
