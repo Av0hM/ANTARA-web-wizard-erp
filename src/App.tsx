@@ -134,7 +134,7 @@ const missionScenes: MissionScene[] = [
   {
     id: "boot",
     eyebrow: "From BITS Goa",
-    title: "Project ANTARA",
+    title: "Project Antara",
     copy: ["Twenty-three students. One satellite. The work begins here."],
     align: "center",
   },
@@ -150,7 +150,7 @@ const missionScenes: MissionScene[] = [
     eyebrow: "The Target",
     title: "The South Atlantic Anomaly",
     copy: ["A region where Earth's magnetic field dips and trapped radiation surges close to the surface. It's one of the most challenging zones any spacecraft can cross."],
-    align: "right",
+    align: "left",
   },
   {
     id: "orbit",
@@ -160,7 +160,7 @@ const missionScenes: MissionScene[] = [
       "400 to 600 kilometers up, the environment offers zero margin for error.",
       "Space weather is highly unpredictable, and radiation levels are far from uniform.",
     ],
-    align: "left",
+    align: "right",
   }
   ,
   {
@@ -201,7 +201,7 @@ const missionScenes: MissionScene[] = [
   {
     id: "finale",
     eyebrow: "The Beginning",
-    title: "TThe Blueprint for Next-Gen Aerospace",
+    title: "The Blueprint for next-gen Aerospace",
     copy: ["Antara proves that when students commit to the work, they can deliver groundbreaking orbital science."],
     align: "center",
   },
