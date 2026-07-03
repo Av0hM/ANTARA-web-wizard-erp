@@ -134,26 +134,16 @@ const missionScenes: MissionScene[] = [
   {
     id: "boot",
     eyebrow: "From BITS Goa",
-    title: "BITS Goa Presents",
-    copy: ["Twenty-three students. One satellite. The work starts here."],
+    title: "Project ANTARA",
+    copy: ["Twenty-three students. One satellite. The work begins here."],
     align: "center",
   },
   {
     id: "title",
-    eyebrow: "The Mission",
-    title: "Project Antara",
-    copy: ["A student-built CubeSat designed to study radiation in Low Earth Orbit.", "Scroll to follow the flight path."],
-    align: "center",
-  },
-  {
-    id: "orbit",
-    eyebrow: "Where We're Going",
-    title: "Low Earth Orbit",
-    copy: [
-      "At 400 to 600 kilometres above Earth, the environment is hostile and unforgiving.",
-      "Radiation levels aren't uniform. Some regions are far more dangerous than others.",
-    ],
-    align: "left",
+    eyebrow: "What We're Building",
+    title: "The Mission",
+    copy: ["A student-built CubeSat designed to study radiation in Low Earth Orbit.", "Scroll to trace the trajectory."],
+    align: "right",
   },
   {
     id: "anomaly",
@@ -163,45 +153,56 @@ const missionScenes: MissionScene[] = [
     align: "right",
   },
   {
+    id: "orbit",
+    eyebrow: "Where We're Heading",
+    title: "Low Earth Orbit",
+    copy: [
+      "400 to 600 kilometers up, the environment offers zero margin for error.",
+      "Space weather is highly unpredictable, and radiation levels are far from uniform.",
+    ],
+    align: "left",
+  }
+  ,
+  {
     id: "entry",
     eyebrow: "Our Focus",
-    title: "Antara Enters the Anomaly",
-    copy: ["We're building a payload to measure high-energy trapped protons as the satellite passes through this region, pass by pass, orbit by orbit."],
+    title: "Antara Navigates the Anomaly",
+    copy: ["We're building a payload to measure high-energy trapped protons, pass by pass, orbit by orbit."],
     align: "left",
   },
-  {
+  { 
     id: "payload",
     eyebrow: "The Hardware",
     title: "What We're Flying",
-    copy: ["A compact detector stack. Shielding. Electronics we designed and tested ourselves.", "Built to survive the environment it's there to study."],
+    copy: ["A compact detector stack. Shielding. Electronics custom built and tested.", "Built to brave the environment it's bound to survive."],
     align: "right",
   },
   {
     id: "systems",
-    eyebrow: "How It Works Together",
+    eyebrow: "How It Comes Together",
     title: "One Coordinated System",
-    copy: ["The payload, attitude control system, and ground station don't operate in isolation. Every subsystem depends on the others. That's what makes this hard and why it matters."],
+    copy: ["The payload, ADCS, and ground station operating in unison to conquer the unique challenges of orbital flight."],
     align: "center",
   },
   {
     id: "data",
     eyebrow: "What We'll Learn",
     title: "Radiation Data That Doesn't Exist Yet",
-    copy: ["Flux curves. Energy distributions. Spatial variation mapped across orbital segments. Data that future missions and future students will actually use."],
+    copy: ["Capturing raw, unmapped spatial variations and energy distributions to unlock new insights into the SAA radiation zone."],
     align: "left",
   },
   {
     id: "students",
     eyebrow: "Who We Are",
-    title: "Built by 23 Students at BITS Goa",
-    copy: ["Not a simulation. Not a textbook exercise. A real satellite, built by real students who decided to do something that hasn't been done here before."],
+    title: "From Code to Orbit",
+    copy: ["Twenty-three students, each accountable for the work that makes this mission real."],
     align: "right",
   },
   {
     id: "finale",
     eyebrow: "The Beginning",
-    title: "This Is How the Next Generation Learns to Build for Space",
-    copy: ["Antara isn't just a mission. It's proof that students can do serious science if they're willing to do the work."],
+    title: "TThe Blueprint for Next-Gen Aerospace",
+    copy: ["Antara proves that when students commit to the work, they can deliver groundbreaking orbital science."],
     align: "center",
   },
 ];
@@ -209,29 +210,29 @@ const missionScenes: MissionScene[] = [
 const archiveSections: ArchiveSection[] = [
   {
     id: "about",
-    eyebrow: "Project Overview",
+    eyebrow: "The Operational Core",
     title: "A student mission built with research intent and engineering discipline.",
     intro:
-      "Antara is a CubeSat mission being built from the ground up by students at BITS Pilani, K K Birla Goa Campus. The goal is to study radiation in Low Earth Orbit, specifically the behaviour of trapped protons in the South Atlantic Anomaly, and return data that is genuinely useful for future spacecraft design.",
+      "Built from scratch by undergraduates from BITS Pilani, KK Birla Goa Campus, Antara is a CubeSat mission analyzing Low Earth Orbit radiation, specifically the behaviour of trapped protons in the South Atlantic Anomaly, to provide actionable data for future spacecraft survival.",
     points: [
       "Focused on radiation measurement in LEO, with special attention to the South Atlantic Anomaly, one of the most operationally significant regions for spacecraft.",
       "Designed to connect payload science, spacecraft systems, and ground operations into one integrated engineering program that students own end to end.",
-      "Built to be legible to sponsors, collaborators, and the broader space community, not just the team building it.",
+      "Developing an orbital research platform built from day one to be legible, verifiable, and genuinely useful to the broader aerospace ecosystem.",
     ],
-    facts: ["Student-led", "CubeSat mission", "BITS Goa"],
+    facts: ["Undergraduate-Driven Aerospace", "BITS Pilani, Goa"],
     cards: [
       {
-        eyebrow: "Why It Matters",
-        title: "Real science needs real hardware.",
+        eyebrow: "Scientific Contribution",
+        title: "Real science demands real hardware.",
         summary:
-          "The data Antara collects doesn't exist in this form yet. Trapped proton behaviour in the SAA, measured by a student-built detector, is a contribution, not just a learning exercise.",
+          "By generating unprecedented datasets on SAA trapped proton behavior, our student-built detector transitions this project from an educational exercise into active aerospace research.",
         tone: "rust",
       },
       {
         eyebrow: "What Makes This Different",
-        title: "A research platform and a training ground, at the same time.",
+        title: "Dual-Impact Engineering.",
         summary:
-          "Antara is preparing the next generation of spacecraft engineers by making them responsible for a real mission from requirements to data products.",
+          "We are a research platform and a training ground in one, preparing the next generation of aerospace leaders by giving them complete ownership of a live orbital mission.",
         tone: "gold",
       },
     ],
@@ -241,7 +242,7 @@ const archiveSections: ArchiveSection[] = [
     eyebrow: "Flight Archive",
     title: "The science, the systems, and why this mission is worth flying.",
     intro:
-      "This section is for anyone who wants to understand what Antara is actually doing, not just the surface story. Here you'll find the mission objective, how the payload works, what we expect to measure, and why the South Atlantic Anomaly is the right target.",
+      "Beyond the Surface: Dive into the technical core of Antara to explore our mission architecture, payload mechanics, and why we are targeting the heart of the South Atlantic Anomaly.",
     points: [
       "The core objective: measure trapped proton flux and energy distribution as Antara passes through the South Atlantic Anomaly across multiple orbital segments.",
       "The spacecraft brings together a custom payload stack, an attitude determination and control system, and a ground station, all designed to work as one.",
@@ -270,7 +271,7 @@ const archiveSections: ArchiveSection[] = [
     eyebrow: "The Team",
     title: "Twenty-three students building a satellite, one subsystem at a time.",
     intro:
-      "Antara is run by students. Not advised by students, run by them. Each subsystem has an owner. Each decision has a name attached to it. That's what makes this a mission rather than a project.",
+      "Project Antara functions as a true aerospace mission, where every subsystem is fully owned and executed under direct student leadership.",
     points: [
       "Payload and instrumentation members focused on detector design, shielding trade-offs, electronics integration, and data quality from the first measurement to the last.",
       "ADCS, power, structures, and onboard systems contributors who are turning mission requirements into a spacecraft that can actually survive orbit.",
@@ -280,7 +281,7 @@ const archiveSections: ArchiveSection[] = [
     cards: [
       {
         eyebrow: "Ownership",
-        title: "Every subsystem has a student who is responsible for it.",
+        title: "True System Authorship.",
         summary:
           "Not just contributing, owning. The team is structured so that engineering decisions have clear authors and can be reviewed, defended, and improved.",
         tone: "gold",
@@ -299,7 +300,7 @@ const archiveSections: ArchiveSection[] = [
     eyebrow: "Mission Log",
     title: "Progress notes, build updates, and the occasional hard lesson.",
     intro:
-      "The mission log is where the work gets documented in real time. Not press releases, actual updates. What we tested, what failed, what we learned, and where we're headed next. If Antara is doing something, it ends up here.",
+      "The mission log is where the work gets documented in real time. A raw, real-time chronicle of what works, what doesn't, and where the Antara engineering team is headed next",
     points: [
       "Weekly and biweekly build logs covering prototypes, design reviews, fabrication runs, and subsystem milestones as they happen.",
       "Technical explainers for anyone who wants to understand the payload physics, the orbital mechanics, or the systems architecture without having to dig through a thesis.",
@@ -309,9 +310,9 @@ const archiveSections: ArchiveSection[] = [
     cards: [
       {
         eyebrow: "Editorial Standard",
-        title: "Write like the work matters. Because it does.",
+        title: "Real-time Technical Documentation.",
         summary:
-          "Antara's mission log covers tests, reviews, fabrication, setbacks, and milestones, written honestly, for people who want to follow a real engineering effort.",
+          "Space is hard, and engineering is messy. This is our unfiltered record of fabrication, failures, and milestones as we build a mission that matters",
         tone: "slate",
       },
       {
@@ -1963,8 +1964,7 @@ function PartnersPage() {
             <p className="content-copy">
               If you're interested in supporting Antara as a funder, a technical
               collaborator, or a community partner, we'd like to hear from you.
-              Tell us who you are, what you do, and how you think you might
-              help.
+              Let us know how you would like to contribute to the mission.
             </p>
             <div className="contact-stack">
               <a href="mailto:project.antara.25@gmail.com?subject=Antara%20Partnership%20Inquiry">
@@ -3271,7 +3271,7 @@ export default function App() {
       newsletter: {
         title: "Newsletter - Project Antara",
         description:
-          "Monthly mission updates from the Antara team. Honest progress notes, subsystem milestones, and the occasional hard lesson.",
+          "Monthly mission updates from the team. Honest progress notes, subsystem milestones, and the occasional hard lesson.",
       },
       admin: {
         title: "Admin Dashboard - Project Antara",
