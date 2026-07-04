@@ -147,7 +147,7 @@ const missionScenes: MissionScene[] = [
   },
   {
     id: "anomaly",
-    eyebrow: "The Targettt",
+    eyebrow: "The Target",
     title: "The South Atlantic Anomaly",
     copy: ["A region where Earth's magnetic field dips and trapped radiation surges close to the surface. It's one of the most challenging zones any spacecraft can cross."],
     align: "left",
