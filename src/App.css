@@ -3245,3 +3245,49 @@
   .antara-timeline__pulse { animation: none; }
   .antara-timeline__fill  { transition: none; }
 }
+
+/* ── Scene 1 logo ── */
+.mission-copy__logo {
+  display: block;
+  width: clamp(72px, 12vw, 120px);
+  height: auto;
+  margin: 0 auto 1.8rem;
+  filter: brightness(0) invert(1);
+  mix-blend-mode: screen;
+  opacity: 0.88;
+  pointer-events: none;
+  user-select: none;
+}
+
+.mission-copy--left  .mission-copy__logo { margin: 0 0 1.8rem; }
+.mission-copy--right .mission-copy__logo { margin: 0 0 1.8rem auto; }
+
+/* ── Partners download button ── */
+.partners-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 120, 43, 0.5);
+  background: rgba(201, 120, 43, 0.08);
+  color: rgba(201, 120, 43, 0.95);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+  width: fit-content;
+}
+
+.partners-download-btn:hover,
+.partners-download-btn:focus-visible {
+  background: rgba(201, 120, 43, 0.16);
+  border-color: rgba(201, 120, 43, 0.8);
+  transform: translateY(-1px);
+}
+
+.partners-download-btn svg {
+  flex-shrink: 0;
+}

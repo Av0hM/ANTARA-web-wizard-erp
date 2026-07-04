@@ -487,15 +487,14 @@ const monthlyIssues: NewsletterIssue[] = [
 
 const homeNavItems: {
   label: string;
-  section: ArchiveSectionId;
+  section: string;
   href: string;
 }[] = [
-  { label: "Journey", section: "about", href: "/#boot" },
   { label: "About", section: "about", href: "/#about" },
   { label: "Mission", section: "mission", href: "/#mission" },
+  { label: "Partners", section: "partners", href: "/partners" },
+  { label: "Mini-Projects", section: "mini-projects", href: "/mini-projects" },
   { label: "Team", section: "team", href: "/#team" },
-  { label: "Logs", section: "blogs", href: "/#blogs" },
-  { label: "Gallery", section: "blogs", href: "/#gallery" },
   { label: "Contact", section: "team", href: "/#footer" },
 ];
 
@@ -1653,6 +1652,13 @@ function HomePage({
                     transform: `translate3d(0, ${(1 - intensity) * 18}px, 0) scale(${0.99 + (intensity - 0.92) * 0.05})`,
                   }}
                 >
+                  {scene.id === "boot" && (
+                    <img
+                      src="/ANTARA_logo.jpeg"
+                      alt="Project Antara"
+                      className="mission-copy__logo"
+                    />
+                  )}
                   <p className="mission-copy__eyebrow">{scene.eyebrow}</p>
                   <h1>{scene.title}</h1>
                   {scene.copy.map((line) => (
@@ -2041,11 +2047,20 @@ function PartnersPage() {
               <a href="mailto:project.antara.25@gmail.com?subject=Antara%20Partnership%20Inquiry">
                 project.antara.25@gmail.com
               </a>
-              <a href="tel:+919999999999">+91 99999 99999</a>
               <span>BITS Pilani, K K Birla Goa Campus, Goa</span>
             </div>
+            
+              href="/assets/sponsorship-flyer.pdf"
+              download="Antara-Sponsorship-Flyer.pdf"
+              className="partners-download-btn"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 2v8m0 0L5 7m3 3 3-3M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Download sponsorship flyer
+            </a>
           </article>
-        </div>
+
         <div className="two-column-grid" style={{ marginTop: "1.25rem" }}>
           <article className="content-panel">
             <p className="panel-eyebrow">How partnerships work</p>
