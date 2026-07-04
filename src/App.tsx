@@ -1672,9 +1672,10 @@ function HomePage({
               </div>
             </section>
           );
-         <MissionTimeline /> 
-         })
-}
+         
+         })}
+         
+<MissionTimeline /> 
 
         <section className="info-hub" id="about">
           <div className="info-hub__intro">
