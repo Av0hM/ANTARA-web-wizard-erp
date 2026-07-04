@@ -133,16 +133,16 @@ type PaginatedPostsResponse = {
 const missionScenes: MissionScene[] = [
   {
     id: "boot",
-    eyebrow: "From BITS Goa",
+    eyebrow: "From BITS Pilani, Goa",
     title: "Project Antara",
-    copy: ["Twenty-three students. One satellite. The work begins here."],
+    copy: ["Twenty-three students. One satellite. It all starts here."],
     align: "center",
   },
   {
     id: "title",
     eyebrow: "What We're Building",
     title: "The Mission",
-    copy: ["A student-built CubeSat designed to study radiation in Low Earth Orbit.", "Scroll to trace the trajectory."],
+    copy: ["A student-built CubeSat designed to study radiation in Low Earth Orbit."],
     align: "right",
   },
   {
@@ -1317,7 +1317,7 @@ function MissionTimeline() {
     <section className="antara-timeline">
       <div className="antara-timeline__inner">
         <p className="antara-timeline__eyebrow">Mission Progress</p>
-        <h2 className="antara-timeline__heading">Where we are.</h2>
+        <h2 className="antara-timeline__heading">Where we are</h2>
         <div className="antara-timeline__wrap">
           <div className="antara-timeline__track">
             <div
