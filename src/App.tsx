@@ -2049,7 +2049,7 @@ function PartnersPage() {
               </a>
               <span>BITS Pilani, K K Birla Goa Campus, Goa</span>
             </div>
-            
+            <a
               href="/assets/sponsorship-flyer.pdf"
               download="Antara-Sponsorship-Flyer.pdf"
               className="partners-download-btn"
