@@ -294,7 +294,7 @@ const archiveSections: ArchiveSection[] = [
     cards: [
       {
         eyebrow: "Ownership",
-        title: "True System Authorship.",
+        title: "True Accountabilty.",
         summary:
           "Not just contributing, owning. The team is structured so that engineering decisions have clear authors and can be reviewed, defended, and improved.",
         tone: "gold",
