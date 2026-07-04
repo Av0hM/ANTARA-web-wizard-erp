@@ -495,7 +495,7 @@ const homeNavItems: {
   { label: "Partners", section: "partners", href: "/partners" },
   { label: "Mini-Projects", section: "mini-projects", href: "/mini-projects" },
   { label: "Team", section: "team", href: "/#team" },
-  { label: "Contact", section: "team", href: "/#footer" },
+  { label: "Contact", section: "contact", href: "/#footer" },
 ];
 
 const sideMenuItems: { label: string; page: PageId; href: string }[] = [
