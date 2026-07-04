@@ -3252,7 +3252,6 @@
   width: clamp(72px, 12vw, 120px);
   height: auto;
   margin: 0 auto 1.8rem;
-  filter: brightness(0) invert(1);
   mix-blend-mode: screen;
   opacity: 0.88;
   pointer-events: none;
