@@ -1291,6 +1291,19 @@ function DocumentReader({
           </a>
           <span>Page {page}</span>
         </div>
+<div className="document-reader__frame">
+          <iframe
+            key={viewerSrc}
+            src={viewerSrc}
+            title={title}
+            className="document-reader__iframe"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function MissionTimeline() {
   const nodes = missionTimeline;
   const currentIndex = nodes.findIndex((n) => n.status === "current");
@@ -1341,18 +1354,6 @@ function MissionTimeline() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-        <div className="document-reader__frame">
-          <iframe
-            key={viewerSrc}
-            src={viewerSrc}
-            title={title}
-            className="document-reader__iframe"
-          />
         </div>
       </div>
     </section>
@@ -1674,7 +1675,7 @@ function HomePage({
           );
          
          })}
-         
+
 <MissionTimeline /> 
 
         <section className="info-hub" id="about">
