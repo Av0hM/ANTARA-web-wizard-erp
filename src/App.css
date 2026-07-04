@@ -192,7 +192,7 @@
 .mission-copy__eyebrow {
   margin: 0 0 1rem;
   text-transform: uppercase;
-  letter-spacing: 0.34em;
+  letter-spacing: 0.22em;
   font-size: 0.74rem;
   color: var(--text-muted);
 }
@@ -295,8 +295,8 @@
 .info-hub__intro p:last-child {
   max-width: 38rem;
   margin: 1rem 0 0;
-  color: #4e4a45;
-  font-size: 1.04rem;
+  color: #2e2b27;
+  font-size: 1.1rem;
   line-height: 1.7;
 }
 
@@ -369,8 +369,8 @@
 .archive-section__lead {
   max-width: 36rem;
   margin: 0;
-  color: #4f4b45;
-  font-size: 1.02rem;
+  color: #3a3733;
+  font-size: 1.06rem;
   line-height: 1.8;
 }
 
@@ -3066,4 +3066,182 @@
   .database-feed__skeleton-line {
     animation: none;
   }
+}
+
+/* ── Mission Timeline ─────────────────────────────── */
+.antara-timeline {
+  position: relative;
+  z-index: 2;
+  padding: 5rem clamp(1.25rem, 5vw, 4rem);
+  background: linear-gradient(
+    180deg,
+    rgba(9, 11, 17, 0) 0%,
+    rgba(9, 11, 17, 0.97) 100%
+  );
+  border-bottom: 1px solid rgba(255, 244, 224, 0.07);
+}
+
+.antara-timeline__inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.antara-timeline__eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(201, 120, 43, 0.9);
+}
+
+.antara-timeline__heading {
+  margin: 0 0 3.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  color: #fcf6eb;
+  line-height: 0.9;
+}
+
+.antara-timeline__wrap {
+  position: relative;
+}
+
+/* horizontal connector track */
+.antara-timeline__track {
+  position: absolute;
+  top: 17px;
+  left: calc(100% / 12);
+  right: calc(100% / 12);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.09);
+  border-radius: 2px;
+  z-index: 0;
+}
+
+.antara-timeline__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c9782b, #d6a56f);
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+/* node row */
+.antara-timeline__nodes {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.antara-timeline__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* dot */
+.antara-timeline__dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.antara-timeline__node--done .antara-timeline__dot {
+  background: #c9782b;
+  border: 2px solid #c9782b;
+  color: #fff;
+}
+
+.antara-timeline__node--current .antara-timeline__dot {
+  background: rgba(201, 120, 43, 0.12);
+  border: 2px solid #c9782b;
+}
+
+.antara-timeline__node--upcoming .antara-timeline__dot {
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.14);
+}
+
+.antara-timeline__check {
+  width: 14px;
+  height: 14px;
+}
+
+.antara-timeline__pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c9782b;
+  animation: tl-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes tl-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.45); opacity: 0.65; }
+}
+
+/* labels */
+.antara-timeline__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  text-align: center;
+  padding: 0 0.2rem;
+}
+
+.antara-timeline__name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.antara-timeline__sub {
+  font-size: 0.66rem;
+  line-height: 1.4;
+}
+
+.antara-timeline__node--done    .antara-timeline__name { color: #fcf6eb; }
+.antara-timeline__node--current .antara-timeline__name { color: #d6a56f; }
+.antara-timeline__node--upcoming .antara-timeline__name { color: rgba(241, 235, 226, 0.36); }
+
+.antara-timeline__node--done    .antara-timeline__sub { color: rgba(241, 235, 226, 0.46); }
+.antara-timeline__node--current .antara-timeline__sub { color: rgba(214, 165, 111, 0.65); }
+.antara-timeline__node--upcoming .antara-timeline__sub { color: rgba(241, 235, 226, 0.2); }
+
+/* mobile: flip to vertical */
+@media (max-width: 720px) {
+  .antara-timeline__nodes {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+  .antara-timeline__track {
+    top: 0; bottom: 0;
+    left: 17px; right: auto;
+    width: 2px; height: auto;
+  }
+  .antara-timeline__fill {
+    width: 100% !important;
+    height: var(--tl-fill-h, 40%);
+  }
+  .antara-timeline__node {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .antara-timeline__label { text-align: left; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .antara-timeline__pulse { animation: none; }
+  .antara-timeline__fill  { transition: none; }
 }

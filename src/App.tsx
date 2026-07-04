@@ -206,6 +206,19 @@ const missionScenes: MissionScene[] = [
     align: "center",
   },
 ];
+const missionTimeline: {
+  id: string;
+  label: string;
+  sub: string;
+  status: "done" | "current" | "upcoming";
+}[] = [
+  { id: "concept",   label: "Mission Concept",             sub: "Team formed, scope defined",         status: "done"     },
+  { id: "pdr",       label: "Preliminary Design Review",   sub: "System architecture locked",         status: "done"     },
+  { id: "cdr",       label: "Critical Design Review",      sub: "Subsystem designs finalised",        status: "current"  },
+  { id: "build",     label: "Build & Integration",         sub: "Hardware fabrication and testing",   status: "upcoming" },
+  { id: "lrr",       label: "Launch Readiness Review",     sub: "Final qualification",                status: "upcoming" },
+  { id: "launch",    label: "Launch",                      sub: "To Low Earth Orbit",                 status: "upcoming" },
+];
 
 const archiveSections: ArchiveSection[] = [
   {
@@ -1278,7 +1291,61 @@ function DocumentReader({
           </a>
           <span>Page {page}</span>
         </div>
+function MissionTimeline() {
+  const nodes = missionTimeline;
+  const currentIndex = nodes.findIndex((n) => n.status === "current");
+  const doneCount = nodes.filter((n) => n.status === "done").length;
+  const progressPct =
+    currentIndex >= 0
+      ? (currentIndex / (nodes.length - 1)) * 100
+      : (doneCount / nodes.length) * 100;
 
+  return (
+    <section className="antara-timeline">
+      <div className="antara-timeline__inner">
+        <p className="antara-timeline__eyebrow">Mission Progress</p>
+        <h2 className="antara-timeline__heading">Where we are.</h2>
+        <div className="antara-timeline__wrap">
+          <div className="antara-timeline__track">
+            <div
+              className="antara-timeline__fill"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <div className="antara-timeline__nodes">
+            {nodes.map((node) => (
+              <div
+                key={node.id}
+                className={`antara-timeline__node antara-timeline__node--${node.status}`}
+              >
+                <div className="antara-timeline__dot">
+                  {node.status === "done" && (
+                    <svg viewBox="0 0 12 12" fill="none" className="antara-timeline__check" aria-hidden="true">
+                      <path
+                        d="M2 6l3 3 5-5"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                  {node.status === "current" && (
+                    <span className="antara-timeline__pulse" />
+                  )}
+                </div>
+                <div className="antara-timeline__label">
+                  <span className="antara-timeline__name">{node.label}</span>
+                  <span className="antara-timeline__sub">{node.sub}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
         <div className="document-reader__frame">
           <iframe
             key={viewerSrc}
@@ -1605,7 +1672,9 @@ function HomePage({
               </div>
             </section>
           );
-        })}
+         <MissionTimeline /> 
+         })
+}
 
         <section className="info-hub" id="about">
           <div className="info-hub__intro">
