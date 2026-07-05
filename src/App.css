@@ -93,13 +93,14 @@
 .mission-hud__nav {
   display: inline-flex;
   align-items: center;
-  gap: 0.15rem;
-  padding: 0.3rem;
+  gap: 0.24rem;
+  padding: 0.34rem;
   border: 1px solid rgba(233, 223, 203, 0.12);
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(20, 22, 26, 0.8), rgba(10, 12, 16, 0.72));
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(18px);
+  min-height: 2.5rem;
 }
 
 .mission-hud__link {
@@ -115,13 +116,90 @@
   font-size: 0.67rem;
   color: rgba(242, 236, 224, 0.84);
   transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .mission-hud__link:hover,
-.mission-hud__link:focus-visible {
+.mission-hud__link:focus-visible,
+.mission-hud__dropdown-toggle:hover,
+.mission-hud__dropdown-toggle:focus-visible {
   background: rgba(218, 145, 86, 0.16);
   color: #fff;
   transform: translateY(-1px);
+}
+
+.mission-hud__link.is-active,
+.mission-hud__dropdown-toggle.is-active {
+  border: 1px solid rgba(201, 120, 43, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(201, 120, 43, 0.2);
+  background: rgba(201, 120, 43, 0.18);
+  color: #fff;
+}
+
+.mission-hud__dropdown {
+  position: relative;
+}
+
+.mission-hud__dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.15rem;
+  padding: 0 0.82rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(242, 236, 224, 0.84);
+  cursor: pointer;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.67rem;
+  font-family: inherit;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mission-hud__dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  display: grid;
+  gap: 0.25rem;
+  min-width: 11.2rem;
+  padding: 0.35rem;
+  border: 1px solid rgba(143, 169, 181, 0.22);
+  border-radius: 0.8rem;
+  background: rgba(15, 18, 24, 0.96);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.mission-hud__dropdown-menu.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.mission-hud__dropdown-link {
+  display: block;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.55rem;
+  color: rgba(242, 236, 224, 0.84);
+  text-decoration: none;
+  font-size: 0.72rem;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.mission-hud__dropdown-link:hover,
+.mission-hud__dropdown-link:focus-visible {
+  background: rgba(218, 145, 86, 0.16);
+  color: #fff;
 }
 
 .mission-hud__meter {
@@ -585,14 +663,12 @@
   box-shadow: 0 24px 62px rgba(0, 0, 0, 0.28);
   opacity: 0;
   pointer-events: none;
-  transform: translateY(0.75rem);
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition: opacity 180ms ease;
 }
 
 .side-menu.is-open {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
 }
 
 .side-menu__eyebrow {
@@ -1135,7 +1211,7 @@
 
 .contact-stack a,
 .contact-stack span {
-  color: #2e2c29;
+  color: #5a544d;
   text-decoration: none;
 }
 
@@ -2949,7 +3025,9 @@
 }
 
 .mission-hud__link.is-active {
-  background: rgba(218, 145, 86, 0.2);
+  border: 1px solid rgba(95, 170, 255, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(95, 170, 255, 0.25);
+  background: rgba(95, 170, 255, 0.16);
   color: #fff;
 }
 
@@ -3046,6 +3124,21 @@
   }
   50% {
     transform: translateX(-50%) translateY(8px);
+  }
+}
+
+@keyframes logoOrbit {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) translateX(4.4rem) rotate(0deg);
+    opacity: 0.85;
+  }
+  45% {
+    transform: translate(-50%, -50%) rotate(162deg) translateX(4.4rem) rotate(-162deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) translateX(4.4rem) rotate(-360deg);
+    opacity: 0.85;
   }
 }
 
@@ -3247,19 +3340,155 @@
 }
 
 /* ── Scene 1 logo ── */
-.mission-copy__logo {
-  display: block;
-  width: clamp(72px, 12vw, 120px);
-  height: auto;
-  margin: 0 auto 1.8rem;
-  mix-blend-mode: screen;
-  opacity: 0.88;
-  pointer-events: none;
-  user-select: none;
+.mission-copy__brand {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 2vw, 1.55rem);
+  width: min(100%, 46rem);
+  margin: 0 auto;
+  transform: translateX(-20%);
 }
 
-.mission-copy--left  .mission-copy__logo { margin: 0 0 1.8rem; }
-.mission-copy--right .mission-copy__logo { margin: 0 0 1.8rem auto; }
+.mission-copy__brand-copy {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.mission-copy__logo-shell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0.4rem;
+  border-radius: 1.3rem;
+  background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 30px rgba(0,0,0,0.16);
+  backdrop-filter: blur(8px);
+  overflow: visible;
+  isolation: isolate;
+}
+
+.mission-copy__logo-shell::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 244, 214, 0.98) 0%, rgba(255, 197, 110, 0.72) 24%, rgba(201, 120, 43, 0.18) 54%, rgba(201, 120, 43, 0) 74%);
+  filter: blur(10px);
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(0deg) translateX(3rem) rotate(0deg);
+  transform-origin: center;
+  animation: logoOrbit 3.8s ease-in-out infinite;
+  opacity: 0.95;
+  z-index: -1;
+}
+
+.mission-copy__logo-shell::after {
+  content: "";
+  position: absolute;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f2d9b9, #c9782b);
+  box-shadow: 0 0 0 4px rgba(201, 120, 43, 0.16), 0 0 16px rgba(242, 217, 185, 0.6);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg) translateX(3rem) rotate(0deg);
+  transform-origin: center;
+  animation: logoOrbit 3.8s ease-in-out infinite;
+  z-index: 1;
+}
+
+.mission-copy__logo {
+  display: block;
+  width: clamp(115px, 15.6vw, 175px);
+  height: auto;
+  flex: 0 0 auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.2)) saturate(0.95) contrast(1.02) brightness(0.96);
+  opacity: 0.9;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  user-select: none;
+  border-radius: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.mission-copy--left .mission-copy__brand {
+  justify-content: flex-start;
+  transform: translateX(-20%);
+}
+
+.mission-copy--center .mission-copy__brand {
+  transform: translateX(-20%);
+}
+
+.mission-copy--right .mission-copy__brand {
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .mission-copy__brand {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transform: translateX(0);
+  }
+
+  .mission-copy--left .mission-copy__brand,
+  .mission-copy--center .mission-copy__brand,
+  .mission-copy--right .mission-copy__brand {
+    justify-content: center;
+    transform: translateX(0);
+  }
+
+  .mission-copy__brand-copy {
+    align-items: center;
+  }
+
+  .mission-copy__logo-shell::before {
+    width: 1.45rem;
+    height: 1.45rem;
+    filter: blur(7px);
+    transform: translate(-50%, -50%) rotate(0deg) translateX(2.1rem) rotate(0deg);
+  }
+
+  .mission-copy__logo-shell::after {
+    width: 0.8rem;
+    height: 0.8rem;
+    box-shadow: 0 0 0 3px rgba(201, 120, 43, 0.16), 0 0 10px rgba(242, 217, 185, 0.5);
+    transform: translate(-50%, -50%) rotate(0deg) translateX(2.1rem) rotate(0deg);
+  }
+
+  .mission-copy__logo {
+    width: clamp(100px, 26vw, 140px);
+  }
+}
+
+@media (max-width: 720px) {
+  @keyframes logoOrbit {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg) translateX(2.1rem) rotate(0deg);
+      opacity: 0.82;
+    }
+    45% {
+      transform: translate(-50%, -50%) rotate(162deg) translateX(2.1rem) rotate(-162deg);
+      opacity: 0.96;
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg) translateX(2.1rem) rotate(-360deg);
+      opacity: 0.82;
+    }
+  }
+}
 
 /* ── Partners download button ── */
 .partners-download-btn {

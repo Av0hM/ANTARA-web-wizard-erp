@@ -9,6 +9,7 @@ import type {
   MouseEvent,
   ReactNode,
 } from "react";
+import antarLogo from "./assets/ANTARA_logo_badge-modified.png";
 import "./App.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -53,7 +54,6 @@ type ArchiveSection = {
   }[];
   images?: ViewerImage[];
 };
-type ArchiveSectionId = ArchiveSection["id"];
 
 type GalleryItem = {
   title: string;
@@ -499,9 +499,8 @@ const homeNavItems: {
 ];
 
 const sideMenuItems: { label: string; page: PageId; href: string }[] = [
-  { label: "Partners", page: "partners", href: "/partners" },
-  { label: "Events", page: "events", href: "/events" },
-  { label: "Mini-Projects", page: "mini-projects", href: "/mini-projects" },
+  { label: "Gallery", page: "home", href: "/#gallery" },
+  { label: "Logs", page: "home", href: "/#blogs" },
   { label: "Newsletter", page: "newsletter", href: "/newsletter" },
 ];
 
@@ -816,13 +815,42 @@ function SiteHeader({
   const [showFloatingNav, setShowFloatingNav] = useState(
     navBehavior === "always",
   );
+  const [miniProjectsMenuOpen, setMiniProjectsMenuOpen] = useState(false);
   const previousYRef = useRef(0);
+  const currentPath =
+    typeof window !== "undefined"
+      ? window.location.pathname.replace(/\/+$/, "") || "/"
+      : "/";
+  const isMiniProjectsRoute = [
+    "/mini-projects",
+    "/ground-station",
+    "/payload-development",
+    "/adcs",
+  ].includes(currentPath);
+  const miniProjectsActive = miniProjectsMenuOpen || isMiniProjectsRoute;
   const sceneIndex =
     navBehavior === "scroll" ? Math.min(Math.floor(progress * 10), 9) : 0;
   const sceneLabel =
     navBehavior === "scroll" && progress >= 1
       ? "Archive"
       : `Scene ${sceneIndex + 1} / 10`;
+
+  useEffect(() => {
+    if (!miniProjectsMenuOpen) {
+      return;
+    }
+
+    const handleDocumentClick = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest(".mission-hud__dropdown")) {
+        return;
+      }
+      setMiniProjectsMenuOpen(false);
+    };
+
+    document.addEventListener("click", handleDocumentClick);
+    return () => document.removeEventListener("click", handleDocumentClick);
+  }, [miniProjectsMenuOpen]);
 
   useEffect(() => {
     if (navBehavior === "always") {
@@ -890,50 +918,130 @@ function SiteHeader({
       </header>
 
       <nav
-        className={`mission-hud-nav-float${showFloatingNav ? " is-visible" : ""}`} 
+        className={`mission-hud-nav-float${showFloatingNav ? " is-visible" : ""}`}
         aria-label="Primary"
       >
-        {homeNavItems.map((item) => (
-          <SmartLink
-            key={item.label}
-            className={`mission-hud__link${item.section === activeSection ? " is-active" : ""}`} 
-            href={item.href}
-          >
-            {item.label}
-          </SmartLink>
-        ))}
+        {homeNavItems
+          .filter((item) => item.label !== "Journey")
+          .map((item) => {
+          if (item.label !== "Mini-Projects") {
+            return (
+              <SmartLink
+                key={item.label}
+                className={`mission-hud__link${item.section === activeSection ? " is-active" : ""}`}
+                href={item.href}
+              >
+                {item.label}
+              </SmartLink>
+            );
+          }
+
+          return (
+            <div key={item.label} className="mission-hud__dropdown">
+              <button
+                type="button"
+                className={`mission-hud__dropdown-toggle${miniProjectsActive ? " is-active" : ""}`}
+                aria-expanded={miniProjectsMenuOpen}
+                onClick={(event) => {
+                  event.preventDefault();
+                  setMiniProjectsMenuOpen((value) => !value);
+                }}
+              >
+                {item.label}
+              </button>
+              <div
+                className={`mission-hud__dropdown-menu${miniProjectsMenuOpen ? " is-open" : ""}`}
+              >
+                <SmartLink
+                  className="mission-hud__dropdown-link"
+                  href={item.href}
+                  onClick={() => setMiniProjectsMenuOpen(false)}
+                >
+                  Overview
+                </SmartLink>
+                {miniProjects.map((project) => (
+                  <SmartLink
+                    key={project.page}
+                    className="mission-hud__dropdown-link"
+                    href={`/${project.page}`}
+                    onClick={() => setMiniProjectsMenuOpen(false)}
+                  >
+                    {project.title}
+                  </SmartLink>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </nav>
     </>
   );
 }
 function SideMenu({
-  page,
   open,
   onClose,
 }: {
-  page: PageId;
   open: boolean;
   onClose: () => void;
 }) {
-  const [projectsOpen, setProjectsOpen] = useState(false);
-  const miniProjectsActive =
-    page === "mini-projects" ||
-    page === "ground-station" ||
-    page === "payload-development" ||
-    page === "adcs";
-  const submenuOpen = miniProjectsActive || projectsOpen;
+  const currentPath =
+    typeof window !== "undefined"
+      ? window.location.pathname.replace(/\/+$/, "") || "/"
+      : "/";
+  const currentHash = typeof window !== "undefined" ? window.location.hash : "";
+  const menuRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const handlePointerDown = (event: Event) => {
+      const target = event.target as Node | null;
+      if (!target || menuRef.current?.contains(target)) {
+        return;
+      }
+
+      onClose();
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+    };
+  }, [open, onClose]);
+
+  const isSidebarActive = (item: { label: string; href: string }) => {
+    if (item.label === "Gallery") {
+      return currentPath === "/" && currentHash === "#gallery";
+    }
+
+    if (item.label === "Logs") {
+      return currentPath === "/" && currentHash === "#blogs";
+    }
+
+    if (item.label === "Newsletter") {
+      return currentPath === "/newsletter";
+    }
+
+    return false;
+  };
 
   return (
     <>
       <aside
+        ref={menuRef}
         className={`side-menu${open ? " is-open" : ""}`}
         id="side-menu-panel"
         aria-label="Site pages"
       >
         <p className="side-menu__eyebrow">Site</p>
         <div className="side-menu__list">
-          {sideMenuItems.slice(0, 2).map((item) => {
-            const active = item.page === page;
+          {sideMenuItems.map((item) => {
+            const active = isSidebarActive(item);
             return (
               <SmartLink
                 key={item.label}
@@ -945,45 +1053,6 @@ function SideMenu({
               </SmartLink>
             );
           })}
-          <div className="side-menu__group">
-            <button
-              type="button"
-              className={`side-menu__link side-menu__group-toggle${miniProjectsActive ? " is-active" : ""}`}
-              aria-expanded={submenuOpen}
-              onClick={() => {
-                setProjectsOpen((value) => !value);
-                onClose();
-              }}
-            >
-              Mini-Projects
-            </button>
-            <div className={`side-menu__submenu${submenuOpen ? " is-open" : ""}`}>
-              <SmartLink
-                className={`side-menu__sublink${page === "mini-projects" ? " is-active" : ""}`}
-                href="/mini-projects"
-                onClick={onClose}
-              >
-                Overview
-              </SmartLink>
-              {miniProjects.map((project) => (
-                <SmartLink
-                  key={project.page}
-                  className={`side-menu__sublink${page === project.page ? " is-active" : ""}`}
-                  href={`/${project.page}`}
-                  onClick={onClose}
-                >
-                  {project.title}
-                </SmartLink>
-              ))}
-            </div>
-          </div>
-          <SmartLink
-            className={`side-menu__link${page === "newsletter" ? " is-active" : ""}`}
-            href="/newsletter"
-            onClick={onClose}
-          >
-            Newsletter
-          </SmartLink>
         </div>
       </aside>
     </>
@@ -1513,7 +1582,7 @@ function HomePage({
 
     const premiumTargets = Array.from(
       scope.querySelectorAll<HTMLElement>(
-        ".mission-cta, .project-card__link, .mission-hud__menu-toggle, .mission-hud__link",
+        ".mission-cta, .project-card__link, .partners-download-btn",
       ),
     );
 
@@ -1629,7 +1698,6 @@ function HomePage({
         </svg>
       </div>
       <SideMenu
-        page="home"
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
       />
@@ -1652,20 +1720,36 @@ function HomePage({
                     transform: `translate3d(0, ${(1 - intensity) * 18}px, 0) scale(${0.99 + (intensity - 0.92) * 0.05})`,
                   }}
                 >
-                  {scene.id === "boot" && (
-                    <img
-                      src="/ANTARA_logo.jpeg"
-                      alt="Project Antara"
-                      className="mission-copy__logo"
-                    />
+                  {scene.id === "boot" ? (
+                    <div className="mission-copy__brand">
+                      <div className="mission-copy__logo-shell">
+                        <img
+                          src={antarLogo}
+                          alt="Project Antara"
+                          className="mission-copy__logo"
+                        />
+                      </div>
+                      <div className="mission-copy__brand-copy">
+                        <p className="mission-copy__eyebrow">{scene.eyebrow}</p>
+                        <h1>{scene.title}</h1>
+                        {scene.copy.map((line) => (
+                          <p key={line} className="mission-copy__text">
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="mission-copy__eyebrow">{scene.eyebrow}</p>
+                      <h1>{scene.title}</h1>
+                      {scene.copy.map((line) => (
+                        <p key={line} className="mission-copy__text">
+                          {line}
+                        </p>
+                      ))}
+                    </>
                   )}
-                  <p className="mission-copy__eyebrow">{scene.eyebrow}</p>
-                  <h1>{scene.title}</h1>
-                  {scene.copy.map((line) => (
-                    <p key={line} className="mission-copy__text">
-                      {line}
-                    </p>
-                  ))}
                   {scene.id === "finale" ? (
                     <SmartLink
                       className="mission-cta"
@@ -1989,7 +2073,6 @@ function StandardPage({
         activeSection=""
       />
       <SideMenu
-        page={page}
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
       />
@@ -2050,7 +2133,7 @@ function PartnersPage() {
               <span>BITS Pilani, K K Birla Goa Campus, Goa</span>
             </div>
             <a
-              href="/assets/sponsorship-flyer.pdf"
+              href="/src/assets/sponsorship-fyer.pdf"
               download="Antara-Sponsorship-Flyer.pdf"
               className="partners-download-btn"
             >
@@ -2060,6 +2143,7 @@ function PartnersPage() {
               Download sponsorship flyer
             </a>
           </article>
+        </div>
 
         <div className="two-column-grid" style={{ marginTop: "1.25rem" }}>
           <article className="content-panel">
