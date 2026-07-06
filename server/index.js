@@ -186,6 +186,9 @@ const defaultOrigins = [
 const allowedOrigins = new Set(
   configuredOrigins.length > 0 ? configuredOrigins : defaultOrigins,
 );
+console.log("CORS DEBUG - allowedOrigins:", JSON.stringify([...allowedOrigins]));
+console.log("CORS DEBUG - CORS_ORIGINS raw:", JSON.stringify(process.env.CORS_ORIGINS ?? null));
+console.log("CORS DEBUG - SITE_URL raw:", JSON.stringify(process.env.SITE_URL ?? null));
 
 const requestBuckets = new Map();
 const queryCache = new Map();
@@ -799,6 +802,9 @@ app.use((req, res, next) => {
   const origin = normalizeOrigin(req.headers.origin ?? "");
   const allowAll = allowedOrigins.has("*");
   const isAllowed = !origin || allowAll || allowedOrigins.has(origin);
+  if (req.method === "POST" && req.path.includes("login")) {
+    console.log("CORS DEBUG - incoming origin:", JSON.stringify(req.headers.origin ?? null), "normalized:", JSON.stringify(origin), "isAllowed:", isAllowed);
+  }
 
   if (origin && isAllowed) {
     res.setHeader("Access-Control-Allow-Origin", origin);
