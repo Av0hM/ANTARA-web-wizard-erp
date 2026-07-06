@@ -27,8 +27,7 @@ const distDir = path.join(rootDir, "dist");
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "change-me";
 const AUTH_SECRET = process.env.AUTH_SECRET ?? "change-this-secret";
-console.log("ADMIN_USERNAME:", ADMIN_USERNAME);
-console.log("ADMIN_PASSWORD:", ADMIN_PASSWORD);
+
 const TOKEN_TTL_HOURS = Number(process.env.TOKEN_TTL_HOURS ?? 12);
 const TOKEN_TTL_MS = Number.isFinite(TOKEN_TTL_HOURS)
   ? TOKEN_TTL_HOURS * 60 * 60 * 1000
