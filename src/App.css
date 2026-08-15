@@ -2116,7 +2116,9 @@
 .site-footer__column span,
 .site-footer__column a,
 .contact-stack a,
-.contact-stack span,
+.contact-stack span {
+  color: rgba(0, 0, 0, 0.9);
+}
 .page-hero__intro,
 .post-content p,
 .post-content--markdown ul,

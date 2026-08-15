@@ -1830,7 +1830,6 @@ function HomePage({
             <div className="database-feed__intro">
               <p className="mission-copy__eyebrow">Logs + Live Posts</p>
               <h2>What we're working on, written as it happens.</h2>
-              <p>No summaries, no spin. Just the mission, documented in real time.</p>
             </div>
             <div className="database-feed__grid">
               {postsLoading ? (
@@ -1929,7 +1928,6 @@ function HomePage({
           <div className="gallery-section__intro" id="gallery">
             <p className="mission-copy__eyebrow">Gallery</p>
             <h2>The mission, in images.</h2>
-            <p>Hardware, orbit, and the places Antara is designed to study.</p>
           </div>
           <div className="gallery-grid">
             {galleryItems.map((item) => (
@@ -2105,9 +2103,8 @@ function PartnersPage() {
             </p>
             <div className="contact-stack">
               <a href="mailto:project.antara.25@gmail.com?subject=Antara%20Partnership%20Inquiry">
-                project.antara.25@gmail.com
+                Mail at: project.antara.25@gmail.com
               </a>
-              <span>BITS Pilani, K K Birla Goa Campus, Goa</span>
             </div>
             <a
               href="/src/assets/sponsorship-fyer.pdf"
