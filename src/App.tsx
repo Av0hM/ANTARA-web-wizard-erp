@@ -152,17 +152,17 @@ const missionScenes: MissionScene[] = [
     copy: ["A region where Earth's magnetic field dips and trapped radiation surges close to the surface. It's one of the most challenging zones any spacecraft can cross."],
     align: "left",
   },
-  {
-    id: "orbit",
-    eyebrow: "Where We're Heading",
-    title: "Low Earth Orbit",
-    copy: [
-      "400 to 600 kilometers up, the environment offers zero margin for error.",
-      "Space weather is highly unpredictable, and radiation levels are far from uniform.",
-    ],
-    align: "right",
-  }
-  ,
+  // {
+  //   id: "orbit",
+  //   eyebrow: "Where We're Heading",
+  //   title: "Low Earth Orbit",
+  //   copy: [
+  //     "400 to 600 kilometers up, the environment offers zero margin for error.",
+  //     "Space weather is highly unpredictable, and radiation levels are far from uniform.",
+  //   ],
+  //   align: "right",
+  // }
+  // ,
   {
     id: "entry",
     eyebrow: "Our Focus",
@@ -177,13 +177,13 @@ const missionScenes: MissionScene[] = [
     copy: ["A compact detector stack. Shielding. Electronics custom built and tested.", "Built to brave the environment it's bound to survive."],
     align: "right",
   },
-  {
-    id: "systems",
-    eyebrow: "How It Comes Together",
-    title: "One Coordinated System",
-    copy: ["The payload, ADCS, and ground station operating in unison to conquer the unique challenges of orbital flight."],
-    align: "center",
-  },
+  // {
+  //   id: "systems",
+  //   eyebrow: "How It Comes Together",
+  //   title: "One Coordinated System",
+  //   copy: ["The payload, ADCS, and ground station operating in unison to conquer the unique challenges of orbital flight."],
+  //   align: "center",
+  // },
   {
     id: "data",
     eyebrow: "What We'll Learn",
@@ -198,13 +198,13 @@ const missionScenes: MissionScene[] = [
     copy: ["Twenty-three students, each accountable for the work that makes this mission real."],
     align: "right",
   },
-  {
-    id: "finale",
-    eyebrow: "The Beginning",
-    title: "The Blueprint for next-gen Aerospace",
-    copy: ["Antara proves that when students commit to the work, they can deliver groundbreaking orbital science."],
-    align: "center",
-  },
+  // {
+  //   id: "finale",
+  //   eyebrow: "The Beginning",
+  //   title: "The Blueprint for next-gen Aerospace",
+  //   copy: ["Antara proves that when students commit to the work, they can deliver groundbreaking orbital science."],
+  //   align: "center",
+  // },
 ];
 const missionTimeline: {
   id: string;
@@ -1454,20 +1454,6 @@ function HomePage({
   const liveBlogPosts = posts
     .filter((post) => post.category === "blog")
     .slice(0, 6);
-  const handleFinaleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    const lenis = getLenis();
-    if (lenis) {
-      lenis.scrollTo("#about", {
-        duration: 1.8,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      });
-      return;
-    }
-
-    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
     const handleScroll = () => {
       const maxScroll =
@@ -1750,15 +1736,6 @@ function HomePage({
                       ))}
                     </>
                   )}
-                  {scene.id === "finale" ? (
-                    <SmartLink
-                      className="mission-cta"
-                      href="/#about"
-                      onClick={handleFinaleClick}
-                    >
-                      Explore the Mission
-                    </SmartLink>
-                  ) : null}
                 </div>
               </div>
             </section>
