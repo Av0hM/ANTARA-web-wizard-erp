@@ -55,20 +55,47 @@ type ArchiveSection = {
   images?: ViewerImage[];
 };
 
-type GalleryItem = {
-  title: string;
-  caption: string;
-  src: string;
-  topic: string;
-  details: string[];
-};
-
 type ViewerImage = {
   title: string;
   caption: string;
   src: string;
   alt: string;
   details: string[];
+};
+
+type GalleryAlbum = {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  coverImage?: string;
+  attachmentPath?: string;
+  attachmentThumbnailPath?: string;
+  galleryImages?: {
+    id: string;
+    src: string;
+    thumbnailSrc?: string;
+    caption: string;
+    alt: string;
+    order: number;
+  }[];
+  publishedAt: string;
+  isPublished: boolean;
+  status?: "draft" | "published";
+  createdAt: string;
+  updatedAt: string;
+};
+
+type GalleryAlbumResponse = {
+  items?: GalleryAlbum[];
+  pagination?: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+  };
 };
 
 type MiniProject = {
@@ -338,46 +365,7 @@ const archiveSections: ArchiveSection[] = [
     ],
   },
 ];
-
-const galleryItems: GalleryItem[] = [
-  {
-    title: "The South Atlantic Anomaly",
-    caption:
-      "The region Antara is built to understand, where trapped radiation presses closest to Earth.",
-    src: "https://www.nasa.gov/wp-content/uploads/2023/03/194991main_s120e006867_hires_full.jpg?w=1041",
-    topic: "South Atlantic Anomaly",
-    details: [
-      "The South Atlantic Anomaly is a region where Earth's magnetic field weakens, allowing trapped high-energy particles to dip into lower orbits than anywhere else on the planet.",
-      "For spacecraft, this zone drives radiation exposure, detector noise events, and operational constraints that mission designers have to account for from the start.",
-      "Antara's payload architecture is built around what happens when the satellite crosses this region, orbit after orbit.",
-    ],
-  },
-  {
-    title: "Meet Antara",
-    caption:
-      "Systems integration is where a spacecraft stops being a collection of parts and starts being a mission.",
-    src: "https://www.nasa.gov/wp-content/uploads/2023/03/iss065e049854-1.jpg?w=1041",
-    topic: "Systems Integration",
-    details: [
-      "A satellite is only as good as its interfaces. Payload, ADCS, ground station, and power systems all have to talk to each other and all have to work at the same time.",
-      "The Antara team is structured around interface boundaries so that when something goes wrong, we know exactly where to look.",
-      "This is what 23 students are building together: not individual subsystems, but a spacecraft that works as one.",
-    ],
-  },
-  {
-    title: "Earth from Orbit",
-    caption:
-      "The view from where Antara will be working.",
-    src: "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/image/earth-%28a%29/Earth%20%28A%29.jpg",
-    topic: "Orbital Science",
-    details: [
-      "From Low Earth Orbit, the geometry of every measurement matters, ground track, pass timing, orbital altitude, and spacecraft attitude all shape what the payload sees.",
-      "Antara's data products are designed to align measurements with orbital context so that analysis is repeatable and interpretable across passes.",
-      "The goal is to move from raw telemetry to spatial radiation maps that actually mean something.",
-    ],
-  },
-];
-
+       
 const miniProjects: MiniProject[] = [
   {
     page: "ground-station",
@@ -651,14 +639,6 @@ const teamArchiveImages: ViewerImage[] = [
     ],
   },
 ];
-
-const galleryViewerImages: ViewerImage[] = galleryItems.map((item) => ({
-  title: item.title,
-  caption: item.caption,
-  src: item.src,
-  alt: item.title,
-  details: item.details,
-}));
 
 const teamArchiveSection = archiveSections.find((section) => section.id === "team");
 if (teamArchiveSection) {
@@ -1445,6 +1425,32 @@ function HomePage({
     items: ViewerImage[];
     index: number;
   } | null>(null);
+  const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbum[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(true);
+
+  const loadGalleryAlbums = async () => {
+    try {
+      const response = await fetch("/api/posts?category=gallery&includeDrafts=false&limit=50");
+      if (!response.ok) {
+        throw new Error("Failed to load gallery albums.");
+      }
+      const data = (await response.json()) as GalleryAlbumResponse;
+      const albums = (data.items ?? []).map((album) => ({
+        ...album,
+        galleryImages: album.galleryImages ?? [],
+        coverImage: album.coverImage ?? album.attachmentThumbnailPath ?? album.attachmentPath ?? "",
+      }));
+      setGalleryAlbums(albums);
+    } catch (error) {
+      console.error("Failed to load gallery:", error);
+    } finally {
+      setGalleryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGalleryAlbums();
+  }, []);
   const shellRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const preloadVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -1930,34 +1936,64 @@ function HomePage({
             <h2>The mission, in images.</h2>
           </div>
           <div className="gallery-grid">
-            {galleryItems.map((item) => (
-              <button
-                type="button"
-                key={item.title}
-                className="gallery-card gallery-card__open"
-                onClick={() =>
-                  setViewerState({
-                    title: "Gallery",
-                    items: galleryViewerImages,
-                    index: Math.max(
-                      0,
-                      galleryItems.findIndex(
-                        (galleryItem) => galleryItem.title === item.title,
-                      ),
-                    ),
-                  })
-                }
-              >
-                <div
-                  className="gallery-card__media"
-                  style={{ backgroundImage: `url("${item.src}")` }}
-                />
-                <div className="gallery-card__body">
-                  <p>{item.title}</p>
-                  <span>{item.caption}</span>
+            {galleryLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="gallery-card database-feed__card--skeleton">
+                  <div className="database-feed__skeleton-line" style={{ height: "200px" }} />
+                  <div className="gallery-card__body">
+                    <div className="database-feed__skeleton-line" style={{ width: "60%", height: "1rem" }} />
+                    <div className="database-feed__skeleton-line" style={{ width: "80%", height: "0.875rem", marginTop: "0.5rem" }} />
+                  </div>
                 </div>
-              </button>
-            ))}
+              ))
+            ) : galleryAlbums.length > 0 ? (
+              galleryAlbums.map((album) => {
+                const albumImages: ViewerImage[] = [
+                  ...(album.attachmentPath ? [{
+                    title: album.title,
+                    caption: album.excerpt || "Album cover",
+                    src: album.attachmentPath,
+                    alt: album.title,
+                    details: album.galleryImages?.map((img) => img.caption) ?? [],
+                  }] : []),
+                  ...(album.galleryImages?.map((img, idx) => ({
+                    title: `${album.title} - Image ${idx + 1}`,
+                    caption: img.caption,
+                    src: img.src,
+                    alt: img.alt,
+                    details: [],
+                  })) ?? []),
+                ];
+                const coverSrc = album.coverImage || album.attachmentThumbnailPath || album.attachmentPath || "";
+                return (
+                  <button
+                    type="button"
+                    key={album.slug}
+                    className="gallery-card gallery-card__open"
+                    onClick={() => albumImages.length > 0 && setViewerState({
+                      title: album.title,
+                      items: albumImages,
+                      index: 0,
+                    })}
+                  >
+                    <div
+                      className="gallery-card__media"
+                      style={{ backgroundImage: coverSrc ? `url("${coverSrc}")` : "none" }}
+                    />
+                    <div className="gallery-card__body">
+                      <p>{album.title}</p>
+                      <span>{album.excerpt || `${albumImages.length} image${albumImages.length !== 1 ? "s" : ""}`}</span>
+                    </div>
+                  </button>
+                );
+              })
+            ) : (
+              <div className="gallery-card" style={{ gridColumn: "1 / -1", textAlign: "center", padding: "3rem" }}>
+                <p className="mission-copy__eyebrow">Gallery</p>
+                <h3>No albums yet.</h3>
+                <p className="content-copy">Create gallery albums from the Admin dashboard.</p>
+              </div>
+            )}
           </div>
         </section>
 
