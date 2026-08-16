@@ -43,9 +43,7 @@ type ArchiveSection = {
   id: "about" | "mission" | "team" | "blogs";
   eyebrow: string;
   title: string;
-  intro: string;
   points: string[];
-  facts: string[];
   cards: {
     eyebrow: string;
     title: string;
@@ -162,7 +160,7 @@ const missionScenes: MissionScene[] = [
     id: "boot",
     eyebrow: "From BITS Pilani, Goa",
     title: "Project Antara",
-    copy: ["Twenty-three students. One satellite. It all starts here."],
+    copy: ["Under-Grad students. One satellite. It all starts here."],
     align: "center",
   },
   {
@@ -222,7 +220,7 @@ const missionScenes: MissionScene[] = [
     id: "students",
     eyebrow: "Who We Are",
     title: "From Code to Orbit",
-    copy: ["Twenty-three students, each accountable for the work that makes this mission real."],
+    copy: ["Under-Grad students, each accountable for the work that makes this mission real."],
     align: "right",
   },
   // {
@@ -240,8 +238,8 @@ const missionTimeline: {
   status: "done" | "current" | "upcoming";
 }[] = [
   { id: "concept",   label: "Mission Concept",             sub: "Team formed, scope defined",         status: "done"     },
-  { id: "pdr",       label: "Preliminary Design Review",   sub: "System architecture locked",         status: "done"     },
-  { id: "cdr",       label: "Critical Design Review",      sub: "Subsystem designs finalised",        status: "current"  },
+  { id: "pdr",       label: "Preliminary Design Review",   sub: "System architecture locked",         status: "current"  },
+  { id: "cdr",       label: "Critical Design Review",      sub: "Subsystem designs finalised",        status: "upcoming" },
   { id: "build",     label: "Build & Integration",         sub: "Hardware fabrication and testing",   status: "upcoming" },
   { id: "lrr",       label: "Launch Readiness Review",     sub: "Final qualification",                status: "upcoming" },
   { id: "launch",    label: "Launch",                      sub: "To Low Earth Orbit",                 status: "upcoming" },
@@ -252,14 +250,11 @@ const archiveSections: ArchiveSection[] = [
     id: "about",
     eyebrow: "The Operational Core",
     title: "A student mission built with research intent and engineering discipline.",
-    intro:
-      "Built from scratch by undergraduates from BITS Pilani, KK Birla Goa Campus, Antara is a CubeSat mission analyzing Low Earth Orbit radiation, specifically the behaviour of trapped protons in the South Atlantic Anomaly, to provide actionable data for future spacecraft survival.",
     points: [
       "Focused on radiation measurement in LEO, with special attention to the South Atlantic Anomaly, one of the most operationally significant regions for spacecraft.",
       "Designed to connect payload science, spacecraft systems, and ground operations into one integrated engineering program that students own end to end.",
       "Developing an orbital research platform built from day one to be legible, verifiable, and genuinely useful to the broader aerospace ecosystem.",
     ],
-    facts: ["Undergraduate-Driven Aerospace", "BITS Pilani, Goa"],
     cards: [
       {
         eyebrow: "Scientific Contribution",
@@ -281,14 +276,11 @@ const archiveSections: ArchiveSection[] = [
     id: "mission",
     eyebrow: "Flight Archive",
     title: "The science, the systems, and why this mission is worth flying.",
-    intro:
-      "Beyond the Surface: Dive into the technical core of Antara to explore our mission architecture, payload mechanics, and why we are targeting the heart of the South Atlantic Anomaly.",
     points: [
       "The core objective: measure trapped proton flux and energy distribution as Antara passes through the South Atlantic Anomaly across multiple orbital segments.",
       "The spacecraft brings together a custom payload stack, an attitude determination and control system, and a ground station, all designed to work as one.",
       "The data output isn't raw telemetry. It's calibrated, interpreted, and built to be useful to mission designers beyond the team that collected it.",
     ],
-    facts: ["LEO radiation", "SAA focus", "Payload data"],
     cards: [
       {
         eyebrow: "Scientific Objective",
@@ -309,15 +301,12 @@ const archiveSections: ArchiveSection[] = [
   {
     id: "team",
     eyebrow: "The Team",
-    title: "Twenty-three students building a satellite, one subsystem at a time.",
-    intro:
-      "Project Antara functions as a true aerospace mission, where every subsystem is fully owned and executed under direct student leadership.",
+    title: "Under-Grad students building a satellite, one subsystem at a time.",
     points: [
       "Payload and instrumentation members focused on detector design, shielding trade-offs, electronics integration, and data quality from the first measurement to the last.",
       "ADCS, power, structures, and onboard systems contributors who are turning mission requirements into a spacecraft that can actually survive orbit.",
       "Ground station, outreach, and communications contributors who make sure the mission is legible, to the public, to sponsors, and to the students who will join after us.",
     ],
-    facts: ["23 members", "Subsystem leads", "Faculty mentors"],
     cards: [
       {
         eyebrow: "Ownership",
@@ -339,14 +328,11 @@ const archiveSections: ArchiveSection[] = [
     id: "blogs",
     eyebrow: "Mission Log",
     title: "Progress notes, build updates, and the occasional hard lesson.",
-    intro:
-      "The mission log is where the work gets documented in real time. A raw, real-time chronicle of what works, what doesn't, and where the Antara engineering team is headed next",
     points: [
       "Weekly and biweekly build logs covering prototypes, design reviews, fabrication runs, and subsystem milestones as they happen.",
       "Technical explainers for anyone who wants to understand the payload physics, the orbital mechanics, or the systems architecture without having to dig through a thesis.",
       "Public updates that keep sponsors, collaborators, and prospective team members close to the actual state of the mission, not a polished version of it.",
     ],
-    facts: ["Mission log", "Tech explainers", "Live updates"],
     cards: [
       {
         eyebrow: "Editorial Standard",
@@ -1046,7 +1032,7 @@ function Footer() {
         <p className="mission-copy__eyebrow">Project Antara</p>
         <h4>A student-built CubeSat mission from BITS Goa.</h4>
         <p>
-          Twenty-three students. One satellite. One very specific region of
+          Under-Grad students. One satellite. One very specific region of
           space we're trying to understand. Antara is a radiation science
           mission built by the people it's training.
         </p>
@@ -1773,12 +1759,6 @@ function HomePage({
               <div className="archive-section__main">
                 <p className="mission-copy__eyebrow">{section.eyebrow}</p>
                 <h3>{section.title}</h3>
-                <p className="archive-section__lead">{section.intro}</p>
-                <div className="archive-section__facts">
-                  {section.facts.map((fact) => (
-                    <span key={fact}>{fact}</span>
-                  ))}
-                </div>
                 {section.images &&
                 section.images.some(
                   (image) => !image.src.startsWith("data:image/svg+xml"),
@@ -3416,7 +3396,7 @@ export default function App() {
       home: {
         title: "Project Antara - Student-Built CubeSat Mission, BITS Goa",
         description:
-          "Project Antara is a BITS Goa student-built CubeSat studying radiation in Low Earth Orbit, with a focus on the South Atlantic Anomaly. Twenty-three students. One satellite.",
+          "Project Antara is a BITS Goa student-built CubeSat studying radiation in Low Earth Orbit, with a focus on the South Atlantic Anomaly. Under-Grad students. One satellite.",
       },
       partners: {
         title: "Partners - Project Antara",
