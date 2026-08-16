@@ -604,8 +604,8 @@
   gap: 1.8rem;
   padding: 3rem clamp(1.25rem, 5vw, 4rem);
   background:
-    radial-gradient(circle at 10% 10%, rgba(188, 111, 59, 0.08), transparent 18%),
-    radial-gradient(circle at 90% 20%, rgba(86, 124, 116, 0.08), transparent 18%),
+    radial-gradient(circle at 10% 10%, rgba(68, 212, 255, 0.08), transparent 18%),
+    radial-gradient(circle at 90% 20%, rgba(245, 166, 74, 0.08), transparent 18%),
     #121417;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -617,7 +617,7 @@
   left: clamp(1.25rem, 5vw, 4rem);
   right: clamp(1.25rem, 5vw, 4rem);
   height: 1px;
-  background: linear-gradient(90deg, rgba(188, 111, 59, 0.7), rgba(86, 124, 116, 0.55), rgba(178, 138, 59, 0.7));
+  background: linear-gradient(90deg, rgba(68, 212, 255, 0.8), rgba(116, 88, 255, 0.7), rgba(245, 166, 74, 0.8));
 }
 
 .site-footer__brand,
@@ -2108,15 +2108,12 @@
 .archive-section__point p,
 .content-copy,
 .content-list,
-.issue-card span,
-.timeline-item span,
-.database-feed__card span,
-.gallery-card__body span,
-.site-footer__brand p:last-child,
-.site-footer__column span,
-.site-footer__column a,
-.contact-stack a,
-.contact-stack span {
+  .issue-card span,
+  .timeline-item span,
+  .database-feed__card span,
+  .gallery-card__body span,
+  .contact-stack a,
+  .contact-stack span {
   color: rgba(0, 0, 0, 0.9);
 }
 .page-hero__intro,
@@ -2212,17 +2209,7 @@
   pointer-events: none;
 }
 
-.site-footer {
-  background:
-    radial-gradient(circle at 12% 18%, rgba(68, 212, 255, 0.1), transparent 28%),
-    radial-gradient(circle at 86% 24%, rgba(245, 166, 74, 0.1), transparent 30%),
-    linear-gradient(180deg, #050a17 0%, #040913 100%);
-  border-top: 1px solid rgba(145, 171, 226, 0.26);
-}
 
-.site-footer::before {
-  background: linear-gradient(90deg, rgba(68, 212, 255, 0.72), rgba(116, 88, 255, 0.74), rgba(245, 166, 74, 0.7));
-}
 
 .newsletter-form input,
 .admin-toolbar input,
@@ -2477,17 +2464,6 @@
   padding-top: 2rem;
 }
 
-.archive-section__lead,
-.archive-section__point p,
-.page-hero__intro,
-.content-copy,
-.content-list,
-.post-content p,
-.post-content--markdown li,
-.post-content--markdown p {
-  color: rgba(228, 224, 214, 0.84);
-}
-
 .gallery-section .content-copy,
 .gallery-section .content-list,
 .info-hub__intro p:last-child,
@@ -2666,31 +2642,7 @@
   padding-bottom: 2.4rem;
 }
 
-.site-footer {
-  background:
-    radial-gradient(circle at 10% 10%, rgba(68, 212, 255, 0.1), transparent 28%),
-    radial-gradient(circle at 90% 20%, rgba(245, 166, 74, 0.1), transparent 30%),
-    linear-gradient(180deg, #050a17 0%, #040913 100%);
-  border-top: 1px solid rgba(145, 171, 226, 0.26);
-}
 
-.site-footer::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(125, 134, 140, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(125, 134, 140, 0.1) 1px, transparent 1px);
-  background-size: 44px 44px, 44px 44px;
-  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
-}
-
-.site-footer__brand p:last-child,
-.site-footer__column span,
-.site-footer__column a {
-  color: rgba(214, 208, 196, 0.76);
-}
 
 /* Readability + controlled vibrancy corrections */
 .archive-grid .mission-copy__eyebrow,
@@ -2765,15 +2717,13 @@
 
 .database-feed__card-link,
 .issue-card__link,
-.post-content--markdown a,
-.site-footer__column a {
+.post-content--markdown a {
   color: #4f6f81;
 }
 
 .database-feed__card-link:hover,
 .issue-card__link:hover,
-.post-content--markdown a:hover,
-.site-footer__column a:hover {
+.post-content--markdown a:hover {
   color: #2a3a49;
 }
 

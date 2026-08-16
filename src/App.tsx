@@ -1089,12 +1089,6 @@ function ImageViewer({
   const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
-    setCurrentIndex(initialIndex);
-    setZoom(1);
-    setRotation(0);
-  }, [initialIndex, items]);
-
-  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -1814,7 +1808,7 @@ function HomePage({
         <section className="gallery-section" id="blogs">
           <div className="database-feed">
             <div className="database-feed__intro">
-              <p className="mission-copy__eyebrow">Logs + Live Posts</p>
+              <p className="mission-copy__eyebrow">Team Blogs</p>
               <h2>What we're working on, written as it happens.</h2>
             </div>
             <div className="database-feed__grid">
@@ -3612,7 +3606,7 @@ export default function App() {
       default:
         return <HomePage posts={posts} postsResolved={postsResolved} />;
     }
-  }, [page, postSlug, posts, postDetail, postDetailError, postDetailLoading]);
+  }, [page, postSlug, posts, postsResolved, postDetail, postDetailError, postDetailLoading]);
 
   if (postsError && page === "home") {
     console.warn("CMS posts unavailable:", postsError);
