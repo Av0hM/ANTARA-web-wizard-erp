@@ -226,11 +226,11 @@ export function ScrollSequence({
         const frameIndex = Math.floor(progress * (_frameCount - 1));
         drawFrame(frameIndex);
       },
-      onRefresh: (): void => {
+      onRefresh: (self: ScrollTriggerInstance): void => {
         if (cancelled) return;
         const el = document.getElementById(_endTrigger.replace("#", ""));
         if (el) {
-          st.vars.end = () => el.offsetTop;
+          self.vars.end = () => el.offsetTop;
         }
         resize();
       },
