@@ -10,6 +10,7 @@ import type {
   ReactNode,
 } from "react";
 import antarLogo from "./assets/ANTARA_logo_badge-modified.png";
+import { ScrollSequence } from "./components/ScrollSequence";
 import "./App.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -1432,11 +1433,7 @@ function HomePage({
     loadGalleryAlbums();
   }, []);
   const shellRef = useRef<HTMLDivElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const preloadVideoRef = useRef<HTMLVideoElement | null>(null);
-  const targetProgressRef = useRef(0);
   const scrollFrameRef = useRef<number | null>(null);
-  const videoFrameRef = useRef<number | null>(null);
   const liveBlogPosts = posts
     .filter((post) => post.category === "blog")
     .slice(0, 6);
@@ -1445,14 +1442,14 @@ function HomePage({
       const maxScroll =
         document.documentElement.scrollHeight - window.innerHeight;
       const next = maxScroll <= 0 ? 0 : window.scrollY / maxScroll;
-      targetProgressRef.current = clamp(next);
+      const clampedProgress = clamp(next);
 
       if (scrollFrameRef.current !== null) {
         return;
       }
 
       scrollFrameRef.current = window.requestAnimationFrame(() => {
-        setProgress(targetProgressRef.current);
+        setProgress(clampedProgress);
         scrollFrameRef.current = null;
       });
     };
@@ -1578,82 +1575,14 @@ function HomePage({
     };
   }, []);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    const preloadVideo = preloadVideoRef.current;
-    if (!video) {
-      return;
-    }
-
-    let cancelled = false;
-    video.pause();
-    video.currentTime = 0;
-    if (preloadVideo) {
-      preloadVideo.play().catch(() => undefined);
-    }
-
-    const tick = () => {
-      if (cancelled) {
-        return;
-      }
-
-      const duration = Number.isFinite(video.duration) ? video.duration : 0;
-      if (duration > 0 && !video.seeking) {
-        const targetTime = Math.min(duration - 0.04, duration * targetProgressRef.current);
-        const delta = targetTime - video.currentTime;
-        if (Math.abs(delta) > 0.01) {
-          const bufferedEnd =
-            video.buffered.length > 0
-              ? video.buffered.end(video.buffered.length - 1)
-              : 0;
-          const safeTarget = bufferedEnd > 0
-            ? Math.min(targetTime, Math.max(0, bufferedEnd - 0.16))
-            : targetTime;
-          const nextTime = video.currentTime + (safeTarget - video.currentTime) * 0.04;
-          video.currentTime = Math.max(0, Math.min(duration - 0.04, nextTime));
-        }
-      }
-
-      videoFrameRef.current = window.requestAnimationFrame(tick);
-    };
-
-    videoFrameRef.current = window.requestAnimationFrame(tick);
-
-    return () => {
-      cancelled = true;
-      preloadVideo?.pause();
-      if (videoFrameRef.current !== null) {
-        window.cancelAnimationFrame(videoFrameRef.current);
-        videoFrameRef.current = null;
-      }
-    };
-  }, []);
-
   return (
     <div className="mission-shell" ref={shellRef}>
-      <video
-        ref={videoRef}
-        className="journey-video"
-        src="/journey.mp4"
-        muted
-        playsInline
-        preload="auto"
-        loop={false}
-        aria-hidden="true"
+      <ScrollSequence
+        frameCount={710}
+        framePattern="frames/journey/frame_%03d.webp"
+        endTrigger="#about"
+        scrub={1.5}
       />
-      <video
-        ref={preloadVideoRef}
-        className="journey-video journey-video--preload"
-        src="/journey.mp4"
-        muted
-        playsInline
-        preload="auto"
-        autoPlay
-        loop
-        aria-hidden="true"
-      />
-      <div className="journey-video__overlay" aria-hidden="true" />
-
       <SiteHeader
         progress={progress}
         menuOpen={menuOpen}
