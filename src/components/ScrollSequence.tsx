@@ -33,34 +33,57 @@ export function ScrollSequence({
   const currentFrameRef = useRef(0);
   const scrollTriggerRef = useRef<ScrollTriggerInstance | null>(null);
   const firstFrameReadyRef = useRef(false);
+  const initializedRef = useRef(false);
   const loadingQueueRef = useRef<number[]>([]);
   const loadingActiveRef = useRef(0);
+  const progressUpdateScheduledRef = useRef(false);
   
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [firstFrameReady, setFirstFrameReady] = useState(false);
 
+  // Refs for props so second effect doesn't need them in deps
+  const frameCountRef = useRef(frameCount);
+  const framePatternRef = useRef(framePattern);
+  const endTriggerRef = useRef(endTrigger);
+  const scrubRef = useRef(scrub);
+
+  // Preload effect - runs ONCE on mount with empty deps
   useEffect(() => {
+    // Guard against StrictMode double-invocation
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const _frameCount = frameCountRef.current;
+    const _framePattern = framePatternRef.current;
+    const _endTrigger = endTriggerRef.current;
+    const _scrub = scrubRef.current;
+
     let cancelled = false;
-    const images: HTMLImageElement[] = new Array(frameCount);
-    const loaded: boolean[] = new Array(frameCount).fill(false);
+    const images: HTMLImageElement[] = new Array(_frameCount);
+    const loaded: boolean[] = new Array(_frameCount).fill(false);
     let loadedCount = 0;
 
+    // Store refs for cleanup access
+    imagesRef.current = images;
+    loadedRef.current = loaded;
+
     const drawFrame = (frameIndex: number): void => {
-      const clampedIndex = Math.min(Math.max(frameIndex, 0), frameCount - 1);
+      if (cancelled) return;
+      const clampedIndex = Math.min(Math.max(frameIndex, 0), _frameCount - 1);
       
       let targetIndex = clampedIndex;
       if (!loaded[targetIndex]) {
-        for (let delta = 1; delta < frameCount; delta += 1) {
+        for (let delta = 1; delta < _frameCount; delta += 1) {
           const lower = clampedIndex - delta;
           const upper = clampedIndex + delta;
           const foundLower = lower >= 0 && loaded[lower];
-          const foundUpper = upper < frameCount && loaded[upper];
+          const foundUpper = upper < _frameCount && loaded[upper];
           if (foundLower && foundUpper) {
             targetIndex = (clampedIndex - lower) <= (upper - clampedIndex) ? lower : upper;
             break;
@@ -97,12 +120,23 @@ export function ScrollSequence({
       currentFrameRef.current = targetIndex;
     };
 
+    const scheduleProgressUpdate = (newProgress: number): void => {
+      if (progressUpdateScheduledRef.current) return;
+      progressUpdateScheduledRef.current = true;
+      requestAnimationFrame(() => {
+        progressUpdateScheduledRef.current = false;
+        if (!cancelled) {
+          setLoadingProgress(newProgress);
+        }
+      });
+    };
+
     const handleImageLoad = (index: number): void => {
-      if (loaded[index]) return;
+      if (cancelled || loaded[index]) return;
       loaded[index] = true;
       loadedCount += 1;
-      const progress = loadedCount / frameCount;
-      setLoadingProgress(progress);
+      const progress = loadedCount / _frameCount;
+      scheduleProgressUpdate(progress);
 
       if (index === 0 && !firstFrameReadyRef.current) {
         firstFrameReadyRef.current = true;
@@ -110,40 +144,38 @@ export function ScrollSequence({
         drawFrame(0);
       }
 
-      if (scrollTriggerRef.current) {
-        scrollTriggerRef.current.refresh();
-      }
-
       processLoadingQueue();
     };
 
     const processLoadingQueue = (): void => {
       if (cancelled) return;
-      while (loadingQueueRef.current.length > 0 && loadingActiveRef.current < 3) {
+      while (loadingQueueRef.current.length > 0 && loadingActiveRef.current < 6) {
         const nextIndex = loadingQueueRef.current.shift();
         if (nextIndex === undefined) break;
         if (loaded[nextIndex]) continue;
         
         loadingActiveRef.current += 1;
         const img = new Image();
-        img.src = getFrameUrl(framePattern, nextIndex);
+        img.src = getFrameUrl(_framePattern, nextIndex);
         img.onload = () => {
           loadingActiveRef.current -= 1;
           handleImageLoad(nextIndex);
         };
         img.onerror = () => {
           loadingActiveRef.current -= 1;
+          // Don't throw, just mark as loaded so queue continues
           handleImageLoad(nextIndex);
         };
         images[nextIndex] = img;
       }
     };
 
-    for (let i = 0; i < frameCount; i += 1) {
+    // Initialize all Image objects and start first 15
+    for (let i = 0; i < _frameCount; i += 1) {
       if (cancelled) break;
 
       const img = new Image();
-      img.src = getFrameUrl(framePattern, i);
+      img.src = getFrameUrl(_framePattern, i);
       
       if (i < 15) {
         img.onload = () => handleImageLoad(i);
@@ -155,11 +187,8 @@ export function ScrollSequence({
       images[i] = img;
     }
 
-    imagesRef.current = images;
-    loadedRef.current = loaded;
-
     const resize = (): void => {
-      if (!canvas) return;
+      if (!canvas || cancelled) return;
 
       const dpr = window.devicePixelRatio || 1;
       const width = window.innerWidth;
@@ -182,7 +211,7 @@ export function ScrollSequence({
     resize();
 
     let endScroll = 0;
-    const endElement = document.getElementById(endTrigger.replace("#", ""));
+    const endElement = document.getElementById(_endTrigger.replace("#", ""));
     if (endElement) {
       endScroll = endElement.offsetTop;
     }
@@ -190,14 +219,16 @@ export function ScrollSequence({
     const st = ScrollTrigger.create({
       start: 0,
       end: endScroll,
-      scrub,
+      scrub: _scrub,
       onUpdate: (self: ScrollTriggerInstance): void => {
+        if (cancelled) return;
         const progress = clamp(self.progress);
-        const frameIndex = Math.floor(progress * (frameCount - 1));
+        const frameIndex = Math.floor(progress * (_frameCount - 1));
         drawFrame(frameIndex);
       },
       onRefresh: (): void => {
-        const el = document.getElementById(endTrigger.replace("#", ""));
+        if (cancelled) return;
+        const el = document.getElementById(_endTrigger.replace("#", ""));
         if (el) {
           st.vars.end = () => el.offsetTop;
         }
@@ -215,8 +246,28 @@ export function ScrollSequence({
         scrollTriggerRef.current.kill();
         scrollTriggerRef.current = null;
       }
+      // Clear queues to prevent callbacks on stale state
+      loadingQueueRef.current = [];
+      loadingActiveRef.current = 0;
     };
-  }, [frameCount, framePattern, endTrigger, scrub]);
+  }, []); // Empty deps - runs ONCE
+
+  // Separate effect for ScrollTrigger refresh when endTrigger element layout changes
+  // Uses a debounced resize observer pattern instead of refreshing on every image load
+  useEffect(() => {
+    const endElement = document.getElementById(endTriggerRef.current.replace("#", ""));
+    if (!endElement) return;
+
+    const observer = new ResizeObserver(() => {
+      if (scrollTriggerRef.current) {
+        scrollTriggerRef.current.refresh();
+      }
+    });
+
+    observer.observe(endElement);
+
+    return () => observer.disconnect();
+  }, []); // Empty deps - endTriggerRef is stable
 
   return (
     <div
