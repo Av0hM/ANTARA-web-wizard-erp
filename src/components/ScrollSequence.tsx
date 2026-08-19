@@ -251,9 +251,11 @@ export function ScrollSequence({
 
     let endScroll = 0;
     const endElement = document.getElementById(_endTrigger.replace("#", ""));
+    console.log(`[ScrollSequence] endTrigger: ${_endTrigger}, endElement:`, endElement, `offsetTop: ${endElement?.offsetTop}`);
     if (endElement) {
       endScroll = endElement.offsetTop;
     }
+    console.log(`[ScrollSequence] ScrollTrigger created with start: 0, end: ${endScroll}`);
 
     const st = ScrollTrigger.create({
       start: 0,
