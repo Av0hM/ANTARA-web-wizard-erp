@@ -234,7 +234,6 @@ export function ScrollSequence({
       start: 0,
       end: endScroll || "+=3000", // fallback if endElement not found
       scrub: _scrub,
-      scroller: "body",
       onUpdate: (self: ScrollTriggerInstance): void => {
         if (!mountedRef.current) return;
         const progress = clamp(self.progress);
