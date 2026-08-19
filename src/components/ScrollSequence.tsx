@@ -81,6 +81,7 @@ export function ScrollSequence({
     const drawFrame = (frameIndex: number): void => {
       if (!mountedRef.current) return;
       const clampedIndex = Math.min(Math.max(frameIndex, 0), _frameCount - 1);
+      console.log(`[ScrollSequence] drawFrame called: frameIndex=${frameIndex}, clamped=${clampedIndex}`);
       
       let targetIndex = clampedIndex;
       if (!loaded[targetIndex]) {
@@ -262,6 +263,7 @@ export function ScrollSequence({
         if (!mountedRef.current) return;
         const progress = clamp(self.progress);
         const frameIndex = Math.floor(progress * (_frameCount - 1));
+        console.log(`[ScrollSequence] onUpdate: progress=${progress.toFixed(3)}, frameIndex=${frameIndex}, scrollY=${window.scrollY}`);
         drawFrame(frameIndex);
       },
       onRefresh: (self: ScrollTriggerInstance): void => {
