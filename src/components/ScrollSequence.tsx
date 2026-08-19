@@ -34,6 +34,7 @@ export function ScrollSequence({
   const scrollTriggerRef = useRef<ScrollTriggerInstance | null>(null);
   const firstFrameReadyRef = useRef(false);
   const initializedRef = useRef(false);
+  const mountedRef = useRef(false);
   const loadingQueueRef = useRef<number[]>([]);
   const loadingActiveRef = useRef(0);
   const progressUpdateScheduledRef = useRef(false);
@@ -51,8 +52,12 @@ export function ScrollSequence({
   // Preload effect - runs ONCE on mount with empty deps
   useEffect(() => {
     // Guard against StrictMode double-invocation
-    if (initializedRef.current) return;
+    if (initializedRef.current) {
+      mountedRef.current = true; // Re-arm for second run
+      return;
+    }
     initializedRef.current = true;
+    mountedRef.current = true;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -65,7 +70,6 @@ export function ScrollSequence({
     const _endTrigger = endTriggerRef.current;
     const _scrub = scrubRef.current;
 
-    let cancelled = false;
     const images: HTMLImageElement[] = new Array(_frameCount);
     const loaded: boolean[] = new Array(_frameCount).fill(false);
     let loadedCount = 0;
@@ -75,7 +79,7 @@ export function ScrollSequence({
     loadedRef.current = loaded;
 
     const drawFrame = (frameIndex: number): void => {
-      if (cancelled) return;
+      if (!mountedRef.current) return;
       const clampedIndex = Math.min(Math.max(frameIndex, 0), _frameCount - 1);
       
       let targetIndex = clampedIndex;
@@ -122,7 +126,7 @@ export function ScrollSequence({
     };
 
     const flushProgressUpdate = (): void => {
-      if (progressUpdateScheduledRef.current && !cancelled) {
+      if (progressUpdateScheduledRef.current && mountedRef.current) {
         progressUpdateScheduledRef.current = false;
         const pct = Math.round(latestProgressRef.current * 100);
         console.log(`[ScrollSequence] Flushing progress update: ${pct}%`);
@@ -143,8 +147,8 @@ export function ScrollSequence({
     };
 
     const handleImageLoad = (index: number): void => {
-      console.log(`[ScrollSequence] >>> handleImageLoad CALLED for index ${index}, cancelled=${cancelled}, loaded[index]=${loaded[index]}`);
-      if (cancelled || loaded[index]) {
+      console.log(`[ScrollSequence] >>> handleImageLoad CALLED for index ${index}, mounted=${mountedRef.current}, loaded[index]=${loaded[index]}`);
+      if (!mountedRef.current || loaded[index]) {
         console.log(`[ScrollSequence] >>> handleImageLoad EARLY RETURN for ${index}`);
         return;
       }
@@ -192,7 +196,7 @@ export function ScrollSequence({
     };
 
     const processLoadingQueue = (): void => {
-      if (cancelled) return;
+      if (!mountedRef.current) return;
       while (loadingQueueRef.current.length > 0 && loadingActiveRef.current < 6) {
         const nextIndex = loadingQueueRef.current.shift();
         if (nextIndex === undefined) break;
@@ -206,7 +210,7 @@ export function ScrollSequence({
 
     // Initialize all Image objects and start first 15
     for (let i = 0; i < _frameCount; i += 1) {
-      if (cancelled) break;
+      if (!mountedRef.current) break;
 
       const img = createImageLoader(i);
       images[i] = img;
@@ -222,7 +226,7 @@ export function ScrollSequence({
     console.log(`[ScrollSequence] Last frame URL: ${getFrameUrl(_framePattern, _frameCount - 1)}`);
 
     const resize = (): void => {
-      if (!canvas || cancelled) return;
+      if (!canvas || !mountedRef.current) return;
 
       const dpr = window.devicePixelRatio || 1;
       const width = window.innerWidth;
@@ -255,13 +259,13 @@ export function ScrollSequence({
       end: endScroll,
       scrub: _scrub,
       onUpdate: (self: ScrollTriggerInstance): void => {
-        if (cancelled) return;
+        if (!mountedRef.current) return;
         const progress = clamp(self.progress);
         const frameIndex = Math.floor(progress * (_frameCount - 1));
         drawFrame(frameIndex);
       },
       onRefresh: (self: ScrollTriggerInstance): void => {
-        if (cancelled) return;
+        if (!mountedRef.current) return;
         const el = document.getElementById(_endTrigger.replace("#", ""));
         if (el) {
           self.vars.end = () => el.offsetTop;
@@ -275,7 +279,7 @@ export function ScrollSequence({
 
     // Fallback: force first frame ready if loading stalls
     const firstFrameTimeout = setTimeout(() => {
-      if (!firstFrameReadyRef.current && !cancelled) {
+      if (!firstFrameReadyRef.current && mountedRef.current) {
         firstFrameReadyRef.current = true;
         setFirstFrameReady(true);
         drawFrame(0);
@@ -283,8 +287,8 @@ export function ScrollSequence({
     }, 5000);
 
     return (): void => {
-      console.log('[ScrollSequence] Effect cleanup running, setting cancelled=true');
-      cancelled = true;
+      console.log('[ScrollSequence] Effect cleanup running, setting mounted=false');
+      mountedRef.current = false;
       clearTimeout(firstFrameTimeout);
       window.removeEventListener("resize", handleResize);
       if (scrollTriggerRef.current) {
