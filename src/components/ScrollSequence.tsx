@@ -37,6 +37,7 @@ export function ScrollSequence({
   const loadingQueueRef = useRef<number[]>([]);
   const loadingActiveRef = useRef(0);
   const progressUpdateScheduledRef = useRef(false);
+  const latestProgressRef = useRef(0);
   
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [firstFrameReady, setFirstFrameReady] = useState(false);
@@ -120,15 +121,19 @@ export function ScrollSequence({
       currentFrameRef.current = targetIndex;
     };
 
-    const scheduleProgressUpdate = (newProgress: number): void => {
-      if (progressUpdateScheduledRef.current) return;
-      progressUpdateScheduledRef.current = true;
-      requestAnimationFrame(() => {
+    const flushProgressUpdate = (): void => {
+      if (progressUpdateScheduledRef.current && !cancelled) {
         progressUpdateScheduledRef.current = false;
-        if (!cancelled) {
-          setLoadingProgress(newProgress);
-        }
-      });
+        setLoadingProgress(latestProgressRef.current);
+      }
+    };
+
+    const scheduleProgressUpdate = (newProgress: number): void => {
+      latestProgressRef.current = newProgress;
+      if (!progressUpdateScheduledRef.current) {
+        progressUpdateScheduledRef.current = true;
+        requestAnimationFrame(flushProgressUpdate);
+      }
     };
 
     const handleImageLoad = (index: number): void => {
@@ -147,6 +152,24 @@ export function ScrollSequence({
       processLoadingQueue();
     };
 
+    const createImageLoader = (index: number): HTMLImageElement => {
+      const img = new Image();
+      const handleLoad = (): void => handleImageLoad(index);
+      const handleError = (): void => handleImageLoad(index);
+      
+      img.onload = handleLoad;
+      img.onerror = handleError;
+      img.src = getFrameUrl(_framePattern, index);
+      
+      // Handle synchronous load (from cache/memory)
+      if (img.complete) {
+        // Use setTimeout to ensure handlers are attached
+        setTimeout(handleLoad, 0);
+      }
+      
+      return img;
+    };
+
     const processLoadingQueue = (): void => {
       if (cancelled) return;
       while (loadingQueueRef.current.length > 0 && loadingActiveRef.current < 6) {
@@ -155,17 +178,7 @@ export function ScrollSequence({
         if (loaded[nextIndex]) continue;
         
         loadingActiveRef.current += 1;
-        const img = new Image();
-        img.src = getFrameUrl(_framePattern, nextIndex);
-        img.onload = () => {
-          loadingActiveRef.current -= 1;
-          handleImageLoad(nextIndex);
-        };
-        img.onerror = () => {
-          loadingActiveRef.current -= 1;
-          // Don't throw, just mark as loaded so queue continues
-          handleImageLoad(nextIndex);
-        };
+        const img = createImageLoader(nextIndex);
         images[nextIndex] = img;
       }
     };
@@ -174,27 +187,15 @@ export function ScrollSequence({
     for (let i = 0; i < _frameCount; i += 1) {
       if (cancelled) break;
 
-      const img = new Image();
-      img.src = getFrameUrl(_framePattern, i);
+      const img = createImageLoader(i);
+      images[i] = img;
       
       if (i < 15) {
-        img.onload = () => handleImageLoad(i);
-        img.onerror = () => handleImageLoad(i);
         loadingActiveRef.current += 1;
       } else {
         loadingQueueRef.current.push(i);
       }
-      images[i] = img;
     }
-
-    // Fallback: if first frame doesn't load within 5s, force progress to avoid stuck loading screen
-    const firstFrameTimeout = setTimeout(() => {
-      if (!firstFrameReadyRef.current && !cancelled) {
-        firstFrameReadyRef.current = true;
-        setFirstFrameReady(true);
-        drawFrame(0);
-      }
-    }, 5000);
 
     const resize = (): void => {
       if (!canvas || cancelled) return;
@@ -248,6 +249,15 @@ export function ScrollSequence({
     scrollTriggerRef.current = st;
     processLoadingQueue();
 
+    // Fallback: force first frame ready if loading stalls
+    const firstFrameTimeout = setTimeout(() => {
+      if (!firstFrameReadyRef.current && !cancelled) {
+        firstFrameReadyRef.current = true;
+        setFirstFrameReady(true);
+        drawFrame(0);
+      }
+    }, 5000);
+
     return (): void => {
       cancelled = true;
       clearTimeout(firstFrameTimeout);
@@ -256,14 +266,12 @@ export function ScrollSequence({
         scrollTriggerRef.current.kill();
         scrollTriggerRef.current = null;
       }
-      // Clear queues to prevent callbacks on stale state
       loadingQueueRef.current = [];
       loadingActiveRef.current = 0;
     };
   }, []); // Empty deps - runs ONCE
 
   // Separate effect for ScrollTrigger refresh when endTrigger element layout changes
-  // Uses a debounced resize observer pattern instead of refreshing on every image load
   useEffect(() => {
     const endElement = document.getElementById(endTriggerRef.current.replace("#", ""));
     if (!endElement) return;
