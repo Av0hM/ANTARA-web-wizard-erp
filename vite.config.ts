@@ -7,6 +7,7 @@ export default defineConfig({
     proxy: {
       "/api": "http://localhost:8787",
       "/uploads": "http://localhost:8787",
+      "/frames": "http://localhost:8787",
       "/robots.txt": "http://localhost:8787",
       "/sitemap.xml": "http://localhost:8787",
     },

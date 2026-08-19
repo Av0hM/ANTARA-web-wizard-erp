@@ -187,6 +187,15 @@ export function ScrollSequence({
       images[i] = img;
     }
 
+    // Fallback: if first frame doesn't load within 5s, force progress to avoid stuck loading screen
+    const firstFrameTimeout = setTimeout(() => {
+      if (!firstFrameReadyRef.current && !cancelled) {
+        firstFrameReadyRef.current = true;
+        setFirstFrameReady(true);
+        drawFrame(0);
+      }
+    }, 5000);
+
     const resize = (): void => {
       if (!canvas || cancelled) return;
 
@@ -241,6 +250,7 @@ export function ScrollSequence({
 
     return (): void => {
       cancelled = true;
+      clearTimeout(firstFrameTimeout);
       window.removeEventListener("resize", handleResize);
       if (scrollTriggerRef.current) {
         scrollTriggerRef.current.kill();
