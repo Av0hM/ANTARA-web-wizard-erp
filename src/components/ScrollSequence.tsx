@@ -157,13 +157,21 @@ export function ScrollSequence({
     };
 
     const createImageLoader = (index: number): HTMLImageElement => {
+      const url = getFrameUrl(_framePattern, index);
+      console.log(`[ScrollSequence] Creating Image for ${url}`);
       const img = new Image();
-      const handleLoad = (): void => handleImageLoad(index);
-      const handleError = (): void => handleImageLoad(index);
+      const handleLoad = (): void => {
+        console.log(`[ScrollSequence] Frame ${index} onload fired`);
+        handleImageLoad(index);
+      };
+      const handleError = (e: string | Event): void => {
+        console.error(`[ScrollSequence] Frame ${index} onerror fired`, e);
+        handleImageLoad(index);
+      };
       
       img.onload = handleLoad;
       img.onerror = handleError;
-      img.src = getFrameUrl(_framePattern, index);
+      img.src = url;
       
       // Handle synchronous load (from cache/memory)
       if (img.complete) {
@@ -202,6 +210,8 @@ export function ScrollSequence({
       }
     }
     console.log(`[ScrollSequence] Initialized ${_frameCount} images, ${Math.min(15, _frameCount)} eager, ${Math.max(0, _frameCount - 15)} queued`);
+    console.log(`[ScrollSequence] First frame URL: ${getFrameUrl(_framePattern, 0)}`);
+    console.log(`[ScrollSequence] Last frame URL: ${getFrameUrl(_framePattern, _frameCount - 1)}`);
 
     const resize = (): void => {
       if (!canvas || cancelled) return;
