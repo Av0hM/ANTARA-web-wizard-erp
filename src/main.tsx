@@ -32,6 +32,23 @@ gsap.ticker.add((time) => {
 });
 gsap.ticker.lagSmoothing(0);
 
+// Lenis scrollerProxy for ScrollTrigger
+ScrollTrigger.scrollerProxy("body", {
+  scrollTop(value?: number) {
+    if (arguments.length) {
+      lenis.scrollTo(value as number, { immediate: true });
+      return value as number;
+    }
+    return lenis.scroll;
+  },
+  getBoundingClientRect() {
+    return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+  },
+});
+
+// Refresh ScrollTrigger when Lenis scroll changes
+lenis.on("scroll", ScrollTrigger.update);
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
