@@ -224,15 +224,15 @@ export function ScrollSequence({
     window.addEventListener("resize", handleResize, { passive: true });
     resize();
 
-    let endScroll = 0;
-    const endElement = document.getElementById(_endTrigger.replace("#", ""));
-    if (endElement) {
-      endScroll = endElement.offsetTop;
-    }
+    const getEnd = (): number => {
+      const el = document.getElementById(_endTrigger.replace("#", ""));
+      return el ? el.offsetTop : 3000;
+    };
 
     const st = ScrollTrigger.create({
-      start: 0,
-      end: endScroll || "+=3000", // fallback if endElement not found
+      trigger: document.body,
+      start: "top top",
+      end: getEnd,
       scrub: _scrub,
       onUpdate: (self: ScrollTriggerInstance): void => {
         if (!mountedRef.current) return;
@@ -242,16 +242,28 @@ export function ScrollSequence({
       },
       onRefresh: (self: ScrollTriggerInstance): void => {
         if (!mountedRef.current) return;
-        const el = document.getElementById(_endTrigger.replace("#", ""));
-        if (el) {
-          self.vars.end = () => el.offsetTop;
-        }
+        self.vars.end = getEnd;
         resize();
       },
     });
 
     scrollTriggerRef.current = st;
     processLoadingQueue();
+
+    // Refresh after window load to ensure layout has settled (images, fonts, etc.)
+    const handleWindowLoad = (): void => {
+      if (mountedRef.current && scrollTriggerRef.current) {
+        scrollTriggerRef.current.refresh();
+      }
+    };
+    window.addEventListener("load", handleWindowLoad);
+
+    // Also refresh after a short delay to catch any late layout shifts
+    const initialRefreshTimeout = setTimeout(() => {
+      if (mountedRef.current && scrollTriggerRef.current) {
+        scrollTriggerRef.current.refresh();
+      }
+    }, 100);
 
     // Fallback: force first frame ready if loading stalls
     const firstFrameTimeout = setTimeout(() => {
@@ -265,6 +277,8 @@ export function ScrollSequence({
     return (): void => {
       mountedRef.current = false;
       clearTimeout(firstFrameTimeout);
+      clearTimeout(initialRefreshTimeout);
+      window.removeEventListener("load", handleWindowLoad);
       window.removeEventListener("resize", handleResize);
       if (scrollTriggerRef.current) {
         scrollTriggerRef.current.kill();
