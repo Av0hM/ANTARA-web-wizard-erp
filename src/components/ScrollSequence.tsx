@@ -131,15 +131,23 @@ export function ScrollSequence({
     };
 
     const scheduleProgressUpdate = (newProgress: number): void => {
+      console.log(`[ScrollSequence] scheduleProgressUpdate called with ${Math.round(newProgress * 100)}%, scheduled=${progressUpdateScheduledRef.current}`);
       latestProgressRef.current = newProgress;
       if (!progressUpdateScheduledRef.current) {
         progressUpdateScheduledRef.current = true;
+        console.log(`[ScrollSequence] Scheduling RAF flush`);
         requestAnimationFrame(flushProgressUpdate);
+      } else {
+        console.log(`[ScrollSequence] RAF already scheduled, skipping`);
       }
     };
 
     const handleImageLoad = (index: number): void => {
-      if (cancelled || loaded[index]) return;
+      console.log(`[ScrollSequence] >>> handleImageLoad CALLED for index ${index}, cancelled=${cancelled}, loaded[index]=${loaded[index]}`);
+      if (cancelled || loaded[index]) {
+        console.log(`[ScrollSequence] >>> handleImageLoad EARLY RETURN for ${index}`);
+        return;
+      }
       loaded[index] = true;
       loadedCount += 1;
       const progress = loadedCount / _frameCount;
@@ -275,6 +283,7 @@ export function ScrollSequence({
     }, 5000);
 
     return (): void => {
+      console.log('[ScrollSequence] Effect cleanup running, setting cancelled=true');
       cancelled = true;
       clearTimeout(firstFrameTimeout);
       window.removeEventListener("resize", handleResize);
