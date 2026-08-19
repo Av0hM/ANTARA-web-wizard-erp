@@ -254,12 +254,14 @@ export function ScrollSequence({
     console.log(`[ScrollSequence] endTrigger: ${_endTrigger}, endElement:`, endElement, `offsetTop: ${endElement?.offsetTop}`);
     if (endElement) {
       endScroll = endElement.offsetTop;
+    } else {
+      console.warn(`[ScrollSequence] END ELEMENT NOT FOUND: ${_endTrigger}`);
     }
     console.log(`[ScrollSequence] ScrollTrigger created with start: 0, end: ${endScroll}`);
 
     const st = ScrollTrigger.create({
       start: 0,
-      end: endScroll,
+      end: endScroll || "+=3000", // fallback if endElement not found
       scrub: _scrub,
       onUpdate: (self: ScrollTriggerInstance): void => {
         if (!mountedRef.current) return;
