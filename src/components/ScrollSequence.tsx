@@ -124,6 +124,8 @@ export function ScrollSequence({
     const flushProgressUpdate = (): void => {
       if (progressUpdateScheduledRef.current && !cancelled) {
         progressUpdateScheduledRef.current = false;
+        const pct = Math.round(latestProgressRef.current * 100);
+        console.log(`[ScrollSequence] Flushing progress update: ${pct}%`);
         setLoadingProgress(latestProgressRef.current);
       }
     };
@@ -141,10 +143,12 @@ export function ScrollSequence({
       loaded[index] = true;
       loadedCount += 1;
       const progress = loadedCount / _frameCount;
+      console.log(`[ScrollSequence] Frame ${index} loaded, count: ${loadedCount}/${_frameCount}, progress: ${Math.round(progress * 100)}%`);
       scheduleProgressUpdate(progress);
 
       if (index === 0 && !firstFrameReadyRef.current) {
         firstFrameReadyRef.current = true;
+        console.log('[ScrollSequence] First frame ready, drawing frame 0');
         setFirstFrameReady(true);
         drawFrame(0);
       }
@@ -163,6 +167,7 @@ export function ScrollSequence({
       
       // Handle synchronous load (from cache/memory)
       if (img.complete) {
+        console.log(`[ScrollSequence] Frame ${index} loaded synchronously (from cache)`);
         // Use setTimeout to ensure handlers are attached
         setTimeout(handleLoad, 0);
       }
@@ -196,6 +201,7 @@ export function ScrollSequence({
         loadingQueueRef.current.push(i);
       }
     }
+    console.log(`[ScrollSequence] Initialized ${_frameCount} images, ${Math.min(15, _frameCount)} eager, ${Math.max(0, _frameCount - 15)} queued`);
 
     const resize = (): void => {
       if (!canvas || cancelled) return;
