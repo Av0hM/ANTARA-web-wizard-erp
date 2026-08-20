@@ -110,6 +110,7 @@ export function ScrollSequence({
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
 
+      // Cover-fit: scale to fill entire canvas, preserving aspect ratio, centered
       const scale = Math.max(
         canvasWidth / img.width,
         canvasHeight / img.height
@@ -229,10 +230,11 @@ export function ScrollSequence({
       return el ? el.offsetTop : 3000;
     };
 
+    // Use numeric start/end with a getter function for end that re-evaluates on refresh
+    // No trigger element needed for numeric start/end
     const st = ScrollTrigger.create({
-      trigger: document.body,
-      start: "top top",
-      end: getEnd,
+      start: 0,
+      end: getEnd(),
       scrub: _scrub,
       onUpdate: (self: ScrollTriggerInstance): void => {
         if (!mountedRef.current) return;
@@ -242,7 +244,7 @@ export function ScrollSequence({
       },
       onRefresh: (self: ScrollTriggerInstance): void => {
         if (!mountedRef.current) return;
-        self.vars.end = getEnd;
+        self.vars.end = getEnd();
         resize();
       },
     });
@@ -315,12 +317,18 @@ export function ScrollSequence({
         height: "100vh",
         zIndex: 0,
         pointerEvents: "none",
+        overflow: "hidden", // Ensure no overflow
       }}
       aria-hidden="true"
     >
       <canvas
         ref={canvasRef}
-        style={{ display: "block", width: "100%", height: "100%" }}
+        style={{ 
+          display: "block", 
+          width: "100%", 
+          height: "100%",
+          objectFit: "cover", // Ensure cover behavior
+        }}
       />
       {loadingProgress < 1 && (
         <div
