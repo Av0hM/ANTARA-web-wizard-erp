@@ -10,7 +10,7 @@ import type {
   ReactNode,
 } from "react";
 import antarLogo from "./assets/ANTARA_logo_badge-modified.png";
-import { ScrollSequence } from "./components/ScrollSequence";
+import { VideoScrubber } from "./components/VideoScrubber";
 import "./App.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -1577,9 +1577,8 @@ function HomePage({
 
   return (
     <div className="mission-shell" ref={shellRef}>
-      <ScrollSequence
-        frameCount={710}
-        framePattern="frames/journey/frame_%03d.webp"
+      <VideoScrubber
+        src="/journey.mp4"
         endTrigger="#about"
         scrub={1.5}
       />
