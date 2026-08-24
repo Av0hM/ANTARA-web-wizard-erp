@@ -1581,6 +1581,7 @@ function HomePage({
         src="/journey.mp4"
         endTrigger="#about"
         scrub={1.5}
+        poster="/journey-poster.webp"
       />
       <SiteHeader
         progress={progress}

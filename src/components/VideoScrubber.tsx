@@ -23,6 +23,7 @@ export function VideoScrubber({
   const scrollTriggerRef = useRef<ScrollTriggerInstance | null>(null);
   const mountedRef = useRef(false);
   const initializedRef = useRef(false);
+  const prefersReducedMotionRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const bufferedEndRef = useRef(0);
@@ -35,6 +36,19 @@ export function VideoScrubber({
     initializedRef.current = true;
     mountedRef.current = true;
 
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    prefersReducedMotionRef.current = mediaQuery.matches;
+    
+    const handleMotionChange = (e: MediaQueryListEvent): void => {
+      prefersReducedMotionRef.current = e.matches;
+      if (scrollTriggerRef.current) {
+        scrollTriggerRef.current.refresh();
+      }
+    };
+    
+    mediaQuery.addEventListener('change', handleMotionChange);
+
     let cancelled = false;
 
     // Track buffered range for smooth seeking
@@ -46,7 +60,6 @@ export function VideoScrubber({
       if (buffered.length > 0) {
         bufferedEndRef.current = buffered.end(buffered.length - 1);
       }
-      // Keep track of buffered start for debugging if needed
       const _bufferedStart = buffered.length > 0 ? buffered.start(0) : 0;
       void _bufferedStart;
     };
@@ -103,9 +116,10 @@ export function VideoScrubber({
     const st = ScrollTrigger.create({
       start: 0,
       end: getEnd(),
-      scrub,
+      scrub: prefersReducedMotionRef.current ? 0 : scrub,
       onUpdate: (self: ScrollTriggerInstance): void => {
         if (!mountedRef.current) return;
+        if (prefersReducedMotionRef.current) return;
         const videoEl = videoRef.current;
         if (!videoEl) return;
         const progress = Math.min(1, Math.max(0, self.progress));
@@ -151,6 +165,7 @@ export function VideoScrubber({
       cancelled = true;
       clearTimeout(initialRefreshTimeout);
       window.removeEventListener("load", handleWindowLoad);
+      mediaQuery.removeEventListener('change', handleMotionChange);
       const videoEl = videoRef.current;
       if (videoEl) {
         videoEl.removeEventListener('progress', handleProgress);
@@ -180,6 +195,13 @@ export function VideoScrubber({
     return () => observer.disconnect();
   }, [endTrigger]);
 
+  // Use poster as background while loading
+  const posterStyle = poster ? {
+    backgroundImage: `url(${poster})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+  } : {};
+
   return (
     <div
       className="video-scrubber"
@@ -191,6 +213,7 @@ export function VideoScrubber({
         zIndex: 0,
         pointerEvents: "none",
         overflow: "hidden",
+        ...posterStyle,
       }}
       aria-hidden="true"
     >
@@ -205,6 +228,8 @@ export function VideoScrubber({
           width: "100%",
           height: "100%",
           objectFit: "cover",
+          opacity: loading ? 0 : 1,
+          transition: 'opacity 300ms ease',
         }}
         aria-hidden="true"
       />
@@ -219,6 +244,7 @@ export function VideoScrubber({
             background: "var(--color-background-primary)",
             zIndex: 10,
             pointerEvents: "none",
+            transition: "opacity 300ms ease",
           }}
           aria-live="polite"
         >
