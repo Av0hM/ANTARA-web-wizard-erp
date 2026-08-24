@@ -737,6 +737,55 @@ app.use(compression());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(uploadsDir));
+
+// Serve video files with proper CORS, Range requests, and caching headers
+function serveVideo(req, res, videoPath, contentType) {
+  const stat = fs.statSync(videoPath);
+  const fileSize = stat.size;
+  const range = req.headers.range;
+
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Range, Content-Type");
+  res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges");
+  res.setHeader("Accept-Ranges", "bytes");
+  res.setHeader("Content-Type", contentType);
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const chunksize = (end - start) + 1;
+
+    const file = fs.createReadStream(videoPath, { start, end });
+    const head = {
+      "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+      "Content-Length": chunksize,
+      "Content-Type": contentType,
+    };
+
+    res.writeHead(206, head);
+    file.pipe(res);
+  } else {
+    res.setHeader("Content-Length", fileSize);
+    res.setHeader("Accept-Ranges", "bytes");
+    res.sendFile(videoPath);
+  }
+}
+
+app.get("/journey.mp4", (req, res) => {
+  const videoPath = path.join(rootDir, "dist", "journey.mp4");
+  serveVideo(req, res, videoPath, "video/mp4");
+});
+
+app.get("/journey-poster.webp", (req, res) => {
+  const posterPath = path.join(rootDir, "dist", "journey-poster.webp");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  res.sendFile(posterPath);
+});
+
 app.use(express.static(path.join(rootDir, "public")));
 app.use(
   pinoHttp({
