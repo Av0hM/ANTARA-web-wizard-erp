@@ -740,6 +740,12 @@ app.use("/uploads", express.static(uploadsDir));
 
 // Serve video files with proper CORS, Range requests, and caching headers
 function serveVideo(req, res, videoPath, contentType) {
+  // Check if file exists
+  if (!fs.existsSync(videoPath)) {
+    logger.warn({ path: videoPath }, 'Video file not found');
+    return res.status(404).json({ error: 'Video file not found' });
+  }
+
   const stat = fs.statSync(videoPath);
   const fileSize = stat.size;
   const range = req.headers.range;
@@ -781,6 +787,10 @@ app.get("/journey.mp4", (req, res) => {
 
 app.get("/journey-poster.webp", (req, res) => {
   const posterPath = path.join(rootDir, "dist", "journey-poster.webp");
+  if (!fs.existsSync(posterPath)) {
+    logger.warn({ path: posterPath }, 'Poster file not found');
+    return res.status(404).json({ error: 'Poster file not found' });
+  }
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
   res.sendFile(posterPath);

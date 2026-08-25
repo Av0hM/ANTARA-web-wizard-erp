@@ -49,6 +49,31 @@
 }
 
 /* ==========================================================================
+   VIDEO SCRUBBER - Full-screen background video with scroll scrubbing
+   ========================================================================== */
+.video-scrubber {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.video-scrubber video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transition: opacity 300ms ease;
+}
+
+.video-scrubber video[style*="opacity: 0"] {
+  opacity: 0;
+}
+
+/* ==========================================================================
    MISSION HUD - Top Navigation Bar (Legacy)
    ========================================================================== */
 .mission-hud {

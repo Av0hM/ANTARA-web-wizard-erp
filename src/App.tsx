@@ -9,11 +9,27 @@ import type {
   MouseEvent,
   ReactNode,
 } from "react";
+import { Document, Page } from "react-pdf";
 import antarLogo from "./assets/ANTARA_logo_badge-modified.png";
 import { VideoScrubber } from "./components/VideoScrubber";
 import "./App.css";
 
 gsap.registerPlugin(ScrollTrigger);
+
+// Configure pdf.js worker
+if (typeof window !== 'undefined') {
+  import('pdfjs-dist').then((pdfjsLib) => {
+    if (pdfjsLib.GlobalWorkerOptions) {
+      import('pdfjs-dist/build/pdf.worker.min.mjs').then((module) => {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = module.default;
+      }).catch(() => {
+        // Fallback to CDN
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+      });
+    }
+  });
+}
 
 type PageId =
   | "home"
@@ -1261,6 +1277,8 @@ function DocumentReader({
   pageLabel?: string;
 }) {
   const [page, setPage] = useState(1);
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1274,7 +1292,16 @@ function DocumentReader({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  const viewerSrc = `${pdfUrl}#page=${page}&zoom=page-fit`;
+  const onDocumentLoadSuccess = ({ numPages: pageCount }: { numPages: number }) => {
+    setNumPages(pageCount);
+    setPdfError(null);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && (numPages === null || newPage <= numPages)) {
+      setPage(newPage);
+    }
+  };
 
   return (
     <section className="document-reader" role="dialog" aria-modal="true">
@@ -1303,10 +1330,10 @@ function DocumentReader({
         </div>
 
         <div className="document-reader__toolbar" aria-label="Document controls">
-          <button type="button" onClick={() => setPage((value) => Math.max(1, value - 1))}>
+          <button type="button" onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
             Previous Page
           </button>
-          <button type="button" onClick={() => setPage((value) => value + 1)}>
+          <button type="button" onClick={() => handlePageChange(page + 1)} disabled={numPages !== null && page >= numPages}>
             Next Page
           </button>
           <button type="button" onClick={() => setPage(1)}>
@@ -1318,15 +1345,43 @@ function DocumentReader({
           <a href={pdfUrl} download>
             Download
           </a>
-          <span>Page {page}</span>
+          <span>Page {page}{numPages ? ` / ${numPages}` : ''}</span>
         </div>
-<div className="document-reader__frame">
-          <iframe
-            key={viewerSrc}
-            src={viewerSrc}
-            title={title}
-            className="document-reader__iframe"
-          />
+        <div className="document-reader__frame">
+          {pdfError ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              color: 'white',
+              padding: '2rem',
+              textAlign: 'center',
+            }}>
+              <p>{pdfError}</p>
+              <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--color-accent)', marginTop: '1rem', display: 'inline-block' }}>
+                Open PDF directly
+              </a>
+            </div>
+          ) : (
+            <Document
+              file={pdfUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={(error) => {
+                console.error('[DocumentReader] PDF load error:', error);
+                setPdfError('Failed to load PDF. Please try opening it directly.');
+              }}
+              loading={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-tertiary)' }}>Loading PDF...</div>}
+              error={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white', padding: '2rem', textAlign: 'center' }}>Failed to load PDF</div>}
+            >
+              <Page
+                pageNumber={page}
+                width={800}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+              />
+            </Document>
+          )}
         </div>
       </div>
     </section>
