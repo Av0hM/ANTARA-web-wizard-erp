@@ -6,14 +6,15 @@ gsap.registerPlugin(ScrollTrigger);
 
 interface VideoScrubberProps {
   src: string;
-  endTrigger: string;
+  /** CSS selector for the section this video should be scroll-linked to (e.g. "#journey"). */
+  containerSelector: string;
   scrub?: number;
   poster?: string;
 }
 
 export function VideoScrubber({
   src,
-  endTrigger,
+  containerSelector,
   scrub = 1.5,
   poster,
 }: VideoScrubberProps) {
@@ -24,8 +25,18 @@ export function VideoScrubber({
   const prefersReducedMotionRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [active, setActive] = useState(true);
   const posterRef = useRef<HTMLImageElement | null>(null);
   const posterLoadedRef = useRef(false);
+
+  // Smooth-scrub refs: ScrollTrigger only ever writes a *target* progress.
+  // A separate rAF loop eases the video's currentTime toward that target
+  // every frame, which is what makes the scrubbing feel buttery instead of
+  // snapping to a new frame on every scroll tick.
+  const targetProgressRef = useRef(0);
+  const currentTimeRef = useRef(0);
+  const rafIdRef = useRef<number | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (initializedRef.current) {
@@ -35,34 +46,22 @@ export function VideoScrubber({
     initializedRef.current = true;
     mountedRef.current = true;
 
-    // Capture video element for cleanup
     const videoElement = videoRef.current;
+    if (!videoElement) return;
 
-    // Check for reduced motion preference
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReducedMotionRef.current = mediaQuery.matches;
-    
+
     const handleMotionChange = (e: MediaQueryListEvent): void => {
       prefersReducedMotionRef.current = e.matches;
       if (scrollTriggerRef.current) {
         scrollTriggerRef.current.refresh();
       }
     };
-    
-    mediaQuery.addEventListener('change', handleMotionChange);
+    mediaQuery.addEventListener("change", handleMotionChange);
 
     let cancelled = false;
-
-    // Track buffered range for smooth seeking
-    const handleProgress = (): void => {
-      if (cancelled) return;
-      const videoEl = videoRef.current;
-      if (!videoEl) return;
-      const buffered = videoEl.buffered;
-      if (buffered.length > 0) {
-        // Track buffered end for debugging if needed
-      }
-    };
+    const abortController = new AbortController();
 
     const handleCanPlay = (): void => {
       if (cancelled) return;
@@ -74,8 +73,8 @@ export function VideoScrubber({
 
     const handleError = (e: Event): void => {
       if (cancelled) return;
-      console.error('[VideoScrubber] Video load error:', e);
-      setError('Failed to load video');
+      console.error("[VideoScrubber] Video load error:", e);
+      setError("Failed to load video");
       setLoading(false);
     };
 
@@ -84,79 +83,78 @@ export function VideoScrubber({
       const videoEl = videoRef.current;
       if (videoEl) {
         videoEl.currentTime = 0;
-        // Draw first frame as fallback
         if (scrollTriggerRef.current) {
           scrollTriggerRef.current.refresh();
         }
       }
     };
 
-    // Pre-buffer around current time when seeking
-    const preloadAroundTime = (time: number, bufferSeconds = 5): void => {
-      const videoEl = videoRef.current;
-      if (!videoEl) return;
-      const start = Math.max(0, time - bufferSeconds);
-      const end = Math.min(videoEl.duration, time + bufferSeconds);
-      void start;
-      void end;
-      // Browser will automatically buffer around currentTime when we set it
-      // But we can hint by briefly playing/pausing
-      if (videoEl.paused && videoEl.readyState >= 3) {
-        videoEl.currentTime = time;
-      }
-    };
-    if (!videoElement) return;
+    videoElement.addEventListener("canplay", handleCanPlay);
+    videoElement.addEventListener("error", handleError);
+    videoElement.addEventListener("loadedmetadata", handleLoadedMetadata);
 
-    videoElement.addEventListener('progress', handleProgress);
-    videoElement.addEventListener('canplay', handleCanPlay);
-    videoElement.addEventListener('error', handleError);
-    videoElement.addEventListener('loadedmetadata', handleLoadedMetadata);
-
-    // Load poster image as fallback
+    // Load poster image as an immediate fallback frame.
     if (poster) {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
+      img.crossOrigin = "anonymous";
       img.src = poster;
       img.onload = () => {
         posterLoadedRef.current = true;
         posterRef.current = img;
       };
-img.onerror = () => {
+      img.onerror = () => {
         posterLoadedRef.current = false;
       };
     }
 
-    const getEndPosition = (): number => {
-      const el = document.getElementById(endTrigger.replace("#", ""));
-      if (el) return el.offsetTop;
-      return 3000;
-    };
+    // Fully buffer the clip into memory (blob URL) before wiring up
+    // scrubbing, so seeking during scroll never stalls waiting on the
+    // network — this is the single biggest factor in how smooth a
+    // scroll-scrubbed video feels.
+    fetch(src, { signal: abortController.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Video fetch failed: ${response.status}`);
+        return response.blob();
+      })
+      .then((blob) => {
+        if (cancelled) return;
+        const blobUrl = URL.createObjectURL(blob);
+        blobUrlRef.current = blobUrl;
+        const videoEl = videoRef.current;
+        if (videoEl) {
+          videoEl.src = blobUrl;
+          videoEl.load();
+        }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        // Fall back to direct network streaming if the prefetch fails
+        // (e.g. very large file, flaky connection).
+        console.warn("[VideoScrubber] Falling back to direct src streaming:", err);
+        const videoEl = videoRef.current;
+        if (videoEl && videoEl.src !== src) {
+          videoEl.src = src;
+          videoEl.load();
+        }
+      });
+
+    const containerEl = document.querySelector<HTMLElement>(containerSelector);
+    if (!containerEl) return;
 
     const st = ScrollTrigger.create({
-      start: 0,
-      end: getEndPosition,
+      trigger: containerEl,
+      start: "top top",
+      end: "bottom bottom",
       scrub: prefersReducedMotionRef.current ? 0 : scrub,
       onUpdate: (self): void => {
         if (!mountedRef.current) return;
         if (prefersReducedMotionRef.current) return;
-        const videoEl = videoRef.current;
-        if (!videoEl) return;
-        const progress = Math.min(1, Math.max(0, self.progress));
-        const targetTime = progress * videoEl.duration;
-        
-        // Use fastSeek if available for instant seeking
-        if ('fastSeek' in videoEl) {
-          videoEl.fastSeek(self.progress * videoEl.duration);
-        } else {
-          // Smooth seek - only update if difference is significant
-          if (Math.abs((videoEl as HTMLVideoElement).currentTime - targetTime) > 0.05) {
-            (videoEl as HTMLVideoElement).currentTime = targetTime;
-          }
-        }
-        
-        // Hint browser to buffer around new position
-        preloadAroundTime(targetTime, 3);
+        targetProgressRef.current = Math.min(1, Math.max(0, self.progress));
       },
+      onEnter: () => setActive(true),
+      onEnterBack: () => setActive(true),
+      onLeave: () => setActive(false),
+      onLeaveBack: () => setActive(false),
       onRefresh: (): void => {
         if (!mountedRef.current) return;
       },
@@ -164,7 +162,34 @@ img.onerror = () => {
 
     scrollTriggerRef.current = st;
 
-    // Refresh after layout settles
+    // The smoothing loop itself: eases currentTime toward the scroll
+    // target every animation frame instead of jumping straight to it.
+    const tick = (): void => {
+      const videoEl = videoRef.current;
+      if (
+        videoEl &&
+        Number.isFinite(videoEl.duration) &&
+        videoEl.duration > 0 &&
+        !prefersReducedMotionRef.current
+      ) {
+        const targetTime = targetProgressRef.current * videoEl.duration;
+        const smoothing = 0.18; // lower = smoother/laggier, higher = snappier/less smooth
+        currentTimeRef.current += (targetTime - currentTimeRef.current) * smoothing;
+
+        if (Math.abs(videoEl.currentTime - currentTimeRef.current) > 0.02) {
+          const fastSeek = (videoEl as HTMLVideoElement & { fastSeek?: (time: number) => void })
+            .fastSeek;
+          if (typeof fastSeek === "function") {
+            fastSeek.call(videoEl, currentTimeRef.current);
+          } else {
+            videoEl.currentTime = currentTimeRef.current;
+          }
+        }
+      } // <-- this closing brace was missing
+      rafIdRef.current = requestAnimationFrame(tick);
+    };
+    rafIdRef.current = requestAnimationFrame(tick);
+
     const handleWindowLoad = (): void => {
       if (mountedRef.current && scrollTriggerRef.current) {
         scrollTriggerRef.current.refresh();
@@ -178,38 +203,32 @@ img.onerror = () => {
       }
     }, 100);
 
-    // Draw poster as fallback frame immediately on mount
     const drawPosterFrame = (): void => {
       const videoEl = videoRef.current;
       if (!videoEl || !posterLoadedRef.current || !posterRef.current) return;
-      
-      const canvas = document.createElement('canvas');
+
+      const canvas = document.createElement("canvas");
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      
+
       const img = posterRef.current;
-      const scale = Math.max(
-        canvas.width / img.width,
-        canvas.height / img.height
-      );
+      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
       const drawWidth = img.width * scale;
       const drawHeight = img.height * scale;
       const offsetX = (canvas.width - drawWidth) * 0.5;
       const offsetY = (canvas.height - drawHeight) * 0.5;
-      
+
       ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-      // Use canvas as fallback background
-      const videoContainer = document.querySelector('.video-scrubber') as HTMLElement | null;
+      const videoContainer = document.querySelector(".video-scrubber") as HTMLElement | null;
       if (videoContainer) {
-        videoContainer.style.backgroundImage = `url(${canvas.toDataURL('image/webp')})`;
-        videoContainer.style.backgroundSize = 'cover';
-        videoContainer.style.backgroundPosition = 'center';
+        videoContainer.style.backgroundImage = `url(${canvas.toDataURL("image/webp")})`;
+        videoContainer.style.backgroundSize = "cover";
+        videoContainer.style.backgroundPosition = "center";
       }
     };
 
-    // Draw poster frame after it loads
     if (posterLoadedRef.current) {
       drawPosterFrame();
     }
@@ -217,26 +236,35 @@ img.onerror = () => {
     return (): void => {
       mountedRef.current = false;
       cancelled = true;
+      abortController.abort();
       clearTimeout(initialRefreshTimeout);
       window.removeEventListener("load", handleWindowLoad);
-      mediaQuery.removeEventListener('change', handleMotionChange);
+      mediaQuery.removeEventListener("change", handleMotionChange);
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
       if (videoElement) {
-        videoElement.removeEventListener('progress', handleProgress);
-        videoElement.removeEventListener('canplay', handleCanPlay);
-        videoElement.removeEventListener('error', handleError);
-        videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        videoElement.removeEventListener("canplay", handleCanPlay);
+        videoElement.removeEventListener("error", handleError);
+        videoElement.removeEventListener("loadedmetadata", handleLoadedMetadata);
       }
       if (scrollTriggerRef.current) {
         scrollTriggerRef.current.kill();
         scrollTriggerRef.current = null;
       }
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
     };
-  }, [endTrigger, scrub, poster]);
+  }, [containerSelector, scrub, poster, src]);
 
-  // Separate effect for endTrigger layout changes
+  // Separate effect: keep ScrollTrigger's start/end in sync if the journey
+  // container's height changes (e.g. content loads in, fonts swap).
   useEffect(() => {
-    const endElement = document.getElementById(endTrigger.replace("#", ""));
-    if (!endElement) return;
+    const el = document.querySelector<HTMLElement>(containerSelector);
+    if (!el) return;
 
     const observer = new ResizeObserver(() => {
       if (scrollTriggerRef.current) {
@@ -244,16 +272,17 @@ img.onerror = () => {
       }
     });
 
-    observer.observe(endElement);
+    observer.observe(el);
     return () => observer.disconnect();
-  }, [endTrigger]);
+  }, [containerSelector]);
 
-  // Use poster as background while loading
-  const posterStyle = poster ? {
-    backgroundImage: `url(${poster})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  } : {};
+  const posterStyle = poster
+    ? {
+      backgroundImage: `url(${poster})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    }
+    : {};
 
   return (
     <div
@@ -266,24 +295,25 @@ img.onerror = () => {
         zIndex: 0,
         pointerEvents: "none",
         overflow: "hidden",
+        opacity: active ? 1 : 0,
+        visibility: active ? "visible" : "hidden",
+        transition: "opacity 300ms ease",
         ...posterStyle,
       }}
       aria-hidden="true"
     >
       <video
         ref={videoRef}
-        src={src}
         muted
         playsInline
         preload="auto"
         poster={poster}
-        crossOrigin="anonymous"
         style={{
           width: "100%",
           height: "100%",
           objectFit: "cover",
           opacity: loading ? 0 : 1,
-          transition: 'opacity 300ms ease',
+          transition: "opacity 300ms ease",
         }}
         aria-hidden="true"
       />
@@ -302,29 +332,33 @@ img.onerror = () => {
           }}
           aria-live="polite"
         >
-          <span style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: "clamp(1rem, 3vw, 2rem)",
-            color: "var(--color-text-tertiary)",
-            letterSpacing: "0.1em",
-          }}>
+          <span
+            style={{
+              fontFamily: "var(--font-mono, monospace)",
+              fontSize: "clamp(1rem, 3vw, 2rem)",
+              color: "var(--color-text-tertiary)",
+              letterSpacing: "0.1em",
+            }}
+          >
             Loading video...
           </span>
         </div>
       )}
       {error && (
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "rgba(0,0,0,0.8)",
-          color: "white",
-          zIndex: 20,
-          padding: "2rem",
-          textAlign: "center",
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.8)",
+            color: "white",
+            zIndex: 20,
+            padding: "2rem",
+            textAlign: "center",
+          }}
+        >
           {error}
         </div>
       )}

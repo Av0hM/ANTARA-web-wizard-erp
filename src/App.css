@@ -74,6 +74,13 @@
 }
 
 /* ==========================================================================
+   JOURNEY SECTION - Wraps the scroll-scrubbed mission panels only
+   ========================================================================== */
+.journey-section {
+  position: relative;
+}
+
+/* ==========================================================================
    MISSION HUD - Top Navigation Bar (Legacy)
    ========================================================================== */
 .mission-hud {
@@ -3551,6 +3558,7 @@
    PARTNERS DOWNLOAD BUTTON - CTA Button for Partners Page
    ========================================================================== */
 /* ── Partners download button ── */
+/*
 .partners-download-btn {
   display: inline-flex;
   align-items: center;
@@ -3579,3 +3587,4 @@
 .partners-download-btn svg {
   flex-shrink: 0;
 }
+  */

@@ -1634,7 +1634,7 @@ function HomePage({
     <div className="mission-shell" ref={shellRef}>
       <VideoScrubber
         src="/journey.mp4"
-        endTrigger="#about"
+        containerSelector="#journey"
         scrub={1.5}
         poster="/journey-poster.webp"
       />
@@ -1659,33 +1659,45 @@ function HomePage({
       />
 
       <main className="mission-scroll">
-        {missionScenes.map((scene, index) => {
-          const intensity = sceneVisibility(
-            progress,
-            index,
-            missionScenes.length,
-          );
+        <div className="journey-section" id="journey">
+          {missionScenes.map((scene, index) => {
+            const intensity = sceneVisibility(
+              progress,
+              index,
+              missionScenes.length,
+            );
 
-          return (
-            <section className="mission-panel" key={scene.id} id={scene.id}>
-              <div className={`mission-copy mission-copy--${scene.align}`}>
-                <div
-                  className="mission-copy__inner"
-                  style={{
-                    opacity: intensity,
-                    transform: `translate3d(0, ${(1 - intensity) * 18}px, 0) scale(${0.99 + (intensity - 0.92) * 0.05})`,
-                  }}
-                >
-                  {scene.id === "boot" ? (
-                    <div className="mission-copy__brand">
-                      <div className="mission-copy__logo-shell">
-                        <img
-                          src={antarLogo}
-                          alt="Project Antara"
-                          className="mission-copy__logo"
-                        />
+            return (
+              <section className="mission-panel" key={scene.id} id={scene.id}>
+                <div className={`mission-copy mission-copy--${scene.align}`}>
+                  <div
+                    className="mission-copy__inner"
+                    style={{
+                      opacity: intensity,
+                      transform: `translate3d(0, ${(1 - intensity) * 18}px, 0) scale(${0.99 + (intensity - 0.92) * 0.05})`,
+                    }}
+                  >
+                    {scene.id === "boot" ? (
+                      <div className="mission-copy__brand">
+                        <div className="mission-copy__logo-shell">
+                          <img
+                            src={antarLogo}
+                            alt="Project Antara"
+                            className="mission-copy__logo"
+                          />
+                        </div>
+                        <div className="mission-copy__brand-copy">
+                          <p className="mission-copy__eyebrow">{scene.eyebrow}</p>
+                          <h1>{scene.title}</h1>
+                          {scene.copy.map((line) => (
+                            <p key={line} className="mission-copy__text">
+                              {line}
+                            </p>
+                          ))}
+                        </div>
                       </div>
-                      <div className="mission-copy__brand-copy">
+                    ) : (
+                      <>
                         <p className="mission-copy__eyebrow">{scene.eyebrow}</p>
                         <h1>{scene.title}</h1>
                         {scene.copy.map((line) => (
@@ -1693,25 +1705,15 @@ function HomePage({
                             {line}
                           </p>
                         ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="mission-copy__eyebrow">{scene.eyebrow}</p>
-                      <h1>{scene.title}</h1>
-                      {scene.copy.map((line) => (
-                        <p key={line} className="mission-copy__text">
-                          {line}
-                        </p>
-                      ))}
-                    </>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </section>
-          );
-         
-         })}
+              </section>
+            );
+
+          })}
+        </div>
 
 <MissionTimeline /> 
 
@@ -2100,7 +2102,7 @@ function PartnersPage() {
                 Mail at: project.antara.25@gmail.com
               </a>
             </div>
-            <a
+            {/* <a
               href="/src/assets/sponsorship-fyer.pdf"
               download="Antara-Sponsorship-Flyer.pdf"
               className="partners-download-btn"
@@ -2109,7 +2111,7 @@ function PartnersPage() {
                 <path d="M8 2v8m0 0L5 7m3 3 3-3M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               Download sponsorship flyer
-            </a>
+            </a> */}
           </article>
         </div>
 
