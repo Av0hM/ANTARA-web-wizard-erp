@@ -6,7 +6,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 interface VideoScrubberProps {
   src: string;
-  /** CSS selector for the section this video should be scroll-linked to (e.g. "#journey"). */
   containerSelector: string;
   scrub?: number;
   poster?: string;
@@ -20,8 +19,6 @@ export function VideoScrubber({
 }: VideoScrubberProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const scrollTriggerRef = useRef<ReturnType<typeof ScrollTrigger.create> | null>(null);
-  const mountedRef = useRef(false);
-  const initializedRef = useRef(false);
   const prefersReducedMotionRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,71 +26,59 @@ export function VideoScrubber({
   const posterRef = useRef<HTMLImageElement | null>(null);
   const posterLoadedRef = useRef(false);
 
-  // Smooth-scrub refs: ScrollTrigger only ever writes a *target* progress.
-  // A separate rAF loop eases the video's currentTime toward that target
-  // every frame, which is what makes the scrubbing feel buttery instead of
-  // snapping to a new frame on every scroll tick.
   const targetProgressRef = useRef(0);
   const currentTimeRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
-  const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (initializedRef.current) {
-      mountedRef.current = true;
-      return;
-    }
-    initializedRef.current = true;
-    mountedRef.current = true;
-
     const videoElement = videoRef.current;
     if (!videoElement) return;
+
+    let cancelled = false;
 
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     prefersReducedMotionRef.current = mediaQuery.matches;
 
     const handleMotionChange = (e: MediaQueryListEvent): void => {
       prefersReducedMotionRef.current = e.matches;
-      if (scrollTriggerRef.current) {
-        scrollTriggerRef.current.refresh();
-      }
+      scrollTriggerRef.current?.refresh();
     };
     mediaQuery.addEventListener("change", handleMotionChange);
 
-    let cancelled = false;
-    const abortController = new AbortController();
-
     const handleCanPlay = (): void => {
       if (cancelled) return;
+      console.log("[VideoScrubber] canplay fired");
       setLoading(false);
-      if (scrollTriggerRef.current) {
-        scrollTriggerRef.current.refresh();
-      }
+      scrollTriggerRef.current?.refresh();
+    };
+
+    // Backup: some browsers fire loadeddata before/instead of canplay in edge cases.
+    const handleLoadedData = (): void => {
+      if (cancelled) return;
+      console.log("[VideoScrubber] loadeddata fired, readyState:", videoElement.readyState);
+      setLoading(false);
+      scrollTriggerRef.current?.refresh();
     };
 
     const handleError = (e: Event): void => {
       if (cancelled) return;
-      console.error("[VideoScrubber] Video load error:", e);
+      console.error("[VideoScrubber] Video load error:", e, videoElement.error);
       setError("Failed to load video");
       setLoading(false);
     };
 
     const handleLoadedMetadata = (): void => {
       if (cancelled) return;
-      const videoEl = videoRef.current;
-      if (videoEl) {
-        videoEl.currentTime = 0;
-        if (scrollTriggerRef.current) {
-          scrollTriggerRef.current.refresh();
-        }
-      }
+      console.log("[VideoScrubber] loadedmetadata fired, duration:", videoElement.duration);
+      videoElement.currentTime = 0;
+      scrollTriggerRef.current?.refresh();
     };
 
     videoElement.addEventListener("canplay", handleCanPlay);
+    videoElement.addEventListener("loadeddata", handleLoadedData);
     videoElement.addEventListener("error", handleError);
     videoElement.addEventListener("loadedmetadata", handleLoadedMetadata);
 
-    // Load poster image as an immediate fallback frame.
     if (poster) {
       const img = new Image();
       img.crossOrigin = "anonymous";
@@ -107,39 +92,31 @@ export function VideoScrubber({
       };
     }
 
-    // Fully buffer the clip into memory (blob URL) before wiring up
-    // scrubbing, so seeking during scroll never stalls waiting on the
-    // network — this is the single biggest factor in how smooth a
-    // scroll-scrubbed video feels.
-    fetch(src, { signal: abortController.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`Video fetch failed: ${response.status}`);
-        return response.blob();
-      })
-      .then((blob) => {
-        if (cancelled) return;
-        const blobUrl = URL.createObjectURL(blob);
-        blobUrlRef.current = blobUrl;
-        const videoEl = videoRef.current;
-        if (videoEl) {
-          videoEl.src = blobUrl;
-          videoEl.load();
-        }
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        // Fall back to direct network streaming if the prefetch fails
-        // (e.g. very large file, flaky connection).
-        console.warn("[VideoScrubber] Falling back to direct src streaming:", err);
-        const videoEl = videoRef.current;
-        if (videoEl && videoEl.src !== src) {
-          videoEl.src = src;
-          videoEl.load();
-        }
+    // Direct assignment — let the browser stream + range-request the video
+    // natively. No fetch/blob buffering: it was adding failure modes without
+    // real benefit, since browsers already handle random-access seeking on
+    // servers that support Range requests (most do).
+    console.log("[VideoScrubber] assigning src:", src);
+    videoElement.src = src;
+    videoElement.load();
+
+    // Safety net: if nothing fires within a few seconds, log full state so
+    // we're not stuck guessing.
+    const stuckTimeout = setTimeout(() => {
+      if (cancelled) return;
+      console.warn("[VideoScrubber] Still not ready after 5s:", {
+        src: videoElement.src,
+        readyState: videoElement.readyState,
+        networkState: videoElement.networkState,
+        error: videoElement.error,
       });
+    }, 5000);
 
     const containerEl = document.querySelector<HTMLElement>(containerSelector);
-    if (!containerEl) return;
+    if (!containerEl) {
+      clearTimeout(stuckTimeout);
+      return;
+    }
 
     const st = ScrollTrigger.create({
       trigger: containerEl,
@@ -147,7 +124,7 @@ export function VideoScrubber({
       end: "bottom bottom",
       scrub: prefersReducedMotionRef.current ? 0 : scrub,
       onUpdate: (self): void => {
-        if (!mountedRef.current) return;
+        if (cancelled) return;
         if (prefersReducedMotionRef.current) return;
         targetProgressRef.current = Math.min(1, Math.max(0, self.progress));
       },
@@ -155,15 +132,10 @@ export function VideoScrubber({
       onEnterBack: () => setActive(true),
       onLeave: () => setActive(false),
       onLeaveBack: () => setActive(false),
-      onRefresh: (): void => {
-        if (!mountedRef.current) return;
-      },
     });
 
     scrollTriggerRef.current = st;
 
-    // The smoothing loop itself: eases currentTime toward the scroll
-    // target every animation frame instead of jumping straight to it.
     const tick = (): void => {
       const videoEl = videoRef.current;
       if (
@@ -173,7 +145,7 @@ export function VideoScrubber({
         !prefersReducedMotionRef.current
       ) {
         const targetTime = targetProgressRef.current * videoEl.duration;
-        const smoothing = 0.18; // lower = smoother/laggier, higher = snappier/less smooth
+        const smoothing = 0.18;
         currentTimeRef.current += (targetTime - currentTimeRef.current) * smoothing;
 
         if (Math.abs(videoEl.currentTime - currentTimeRef.current) > 0.02) {
@@ -185,27 +157,22 @@ export function VideoScrubber({
             videoEl.currentTime = currentTimeRef.current;
           }
         }
-      } // <-- this closing brace was missing
+      }
       rafIdRef.current = requestAnimationFrame(tick);
     };
     rafIdRef.current = requestAnimationFrame(tick);
 
     const handleWindowLoad = (): void => {
-      if (mountedRef.current && scrollTriggerRef.current) {
-        scrollTriggerRef.current.refresh();
-      }
+      scrollTriggerRef.current?.refresh();
     };
     window.addEventListener("load", handleWindowLoad);
 
     const initialRefreshTimeout = setTimeout(() => {
-      if (mountedRef.current && scrollTriggerRef.current) {
-        scrollTriggerRef.current.refresh();
-      }
+      scrollTriggerRef.current?.refresh();
     }, 100);
 
     const drawPosterFrame = (): void => {
-      const videoEl = videoRef.current;
-      if (!videoEl || !posterLoadedRef.current || !posterRef.current) return;
+      if (!posterLoadedRef.current || !posterRef.current) return;
 
       const canvas = document.createElement("canvas");
       canvas.width = window.innerWidth;
@@ -234,9 +201,8 @@ export function VideoScrubber({
     }
 
     return (): void => {
-      mountedRef.current = false;
       cancelled = true;
-      abortController.abort();
+      clearTimeout(stuckTimeout);
       clearTimeout(initialRefreshTimeout);
       window.removeEventListener("load", handleWindowLoad);
       mediaQuery.removeEventListener("change", handleMotionChange);
@@ -244,32 +210,23 @@ export function VideoScrubber({
         cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = null;
       }
-      if (videoElement) {
-        videoElement.removeEventListener("canplay", handleCanPlay);
-        videoElement.removeEventListener("error", handleError);
-        videoElement.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      }
+      videoElement.removeEventListener("canplay", handleCanPlay);
+      videoElement.removeEventListener("loadeddata", handleLoadedData);
+      videoElement.removeEventListener("error", handleError);
+      videoElement.removeEventListener("loadedmetadata", handleLoadedMetadata);
       if (scrollTriggerRef.current) {
         scrollTriggerRef.current.kill();
         scrollTriggerRef.current = null;
       }
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-        blobUrlRef.current = null;
-      }
     };
   }, [containerSelector, scrub, poster, src]);
 
-  // Separate effect: keep ScrollTrigger's start/end in sync if the journey
-  // container's height changes (e.g. content loads in, fonts swap).
   useEffect(() => {
     const el = document.querySelector<HTMLElement>(containerSelector);
     if (!el) return;
 
     const observer = new ResizeObserver(() => {
-      if (scrollTriggerRef.current) {
-        scrollTriggerRef.current.refresh();
-      }
+      scrollTriggerRef.current?.refresh();
     });
 
     observer.observe(el);
@@ -278,10 +235,10 @@ export function VideoScrubber({
 
   const posterStyle = poster
     ? {
-      backgroundImage: `url(${poster})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-    }
+        backgroundImage: `url(${poster})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
     : {};
 
   return (
