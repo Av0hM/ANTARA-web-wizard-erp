@@ -60,9 +60,21 @@ export function VideoScrubber({
       scrollTriggerRef.current?.refresh();
     };
 
+    let errorRetries = 0;
     const handleError = (e: Event): void => {
       if (cancelled) return;
-      console.error("[VideoScrubber] Video load error:", e, videoElement.error);
+      console.error("[VideoScrubber] Video load error:", e);
+      const videoEl = videoRef.current;
+      if (videoEl && errorRetries < 2) {
+        errorRetries += 1;
+        // Transient decode hiccups (usually from a seek storm) are
+        // recoverable — reload the same source rather than giving up.
+        window.setTimeout(() => {
+          if (cancelled || !videoRef.current) return;
+          videoRef.current.load();
+        }, 300);
+        return;
+      }
       setError("Failed to load video");
       setLoading(false);
     };
@@ -122,7 +134,7 @@ export function VideoScrubber({
       trigger: containerEl,
       start: "top top",
       end: "bottom bottom",
-      scrub: prefersReducedMotionRef.current ? 0 : scrub,
+      scrub: prefersReducedMotionRef.current ? 0 : true,   // was: scrub
       onUpdate: (self): void => {
         if (cancelled) return;
         if (prefersReducedMotionRef.current) return;
@@ -142,19 +154,30 @@ export function VideoScrubber({
         videoEl &&
         Number.isFinite(videoEl.duration) &&
         videoEl.duration > 0 &&
+        videoEl.readyState >= 2 &&
         !prefersReducedMotionRef.current
       ) {
         const targetTime = targetProgressRef.current * videoEl.duration;
-        const smoothing = 0.18;
-        currentTimeRef.current += (targetTime - currentTimeRef.current) * smoothing;
 
-        if (Math.abs(videoEl.currentTime - currentTimeRef.current) > 0.02) {
-          const fastSeek = (videoEl as HTMLVideoElement & { fastSeek?: (time: number) => void })
-            .fastSeek;
-          if (typeof fastSeek === "function") {
-            fastSeek.call(videoEl, currentTimeRef.current);
-          } else {
-            videoEl.currentTime = currentTimeRef.current;
+        // Never queue a new seek while the browser is still processing the
+        // previous one — overlapping seeks are what choke the decoder and
+        // make the video go blank on fast/erratic scrolling.
+        if (!videoEl.seeking) {
+          const bigJump = Math.abs(targetTime - videoEl.currentTime) > 0.75;
+          const smoothing = 0.35;
+
+          currentTimeRef.current = bigJump
+            ? targetTime // snap straight there instead of stepping through every frame in between
+            : currentTimeRef.current + (targetTime - currentTimeRef.current) * smoothing;
+
+          if (Math.abs(videoEl.currentTime - currentTimeRef.current) > 0.02) {
+            const fastSeek = (videoEl as HTMLVideoElement & { fastSeek?: (time: number) => void })
+              .fastSeek;
+            if (typeof fastSeek === "function") {
+              fastSeek.call(videoEl, currentTimeRef.current);
+            } else {
+              videoEl.currentTime = currentTimeRef.current;
+            }
           }
         }
       }
@@ -235,10 +258,10 @@ export function VideoScrubber({
 
   const posterStyle = poster
     ? {
-        backgroundImage: `url(${poster})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
+      backgroundImage: `url(${poster})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    }
     : {};
 
   return (
