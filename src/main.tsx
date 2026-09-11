@@ -4,36 +4,49 @@ import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import App from "./App";
+import "lenis/dist/lenis.css";
 import "./index.css";
 
 declare global {
-  interface Window {
-    __antaraLenis?: Lenis;
-  }
+  interface Window { __antaraLenis?: Lenis; }
 }
 
 gsap.registerPlugin(ScrollTrigger);
+const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+let lenis: Lenis | undefined;
+const tick = (time: number) => lenis?.raf(time * 1000);
+const configureScroll = () => {
+  gsap.ticker.remove(tick);
+  lenis?.destroy();
+  lenis = undefined;
+  delete window.__antaraLenis;
+  if (!motion.matches) {
+    lenis = new Lenis({
+      lerp: 0.1,
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      // Keep native touch scrolling and momentum on mobile.
+      syncTouch: false,
+      autoResize: true,
+    });
+    window.__antaraLenis = lenis;
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add(tick);
+  }
+  ScrollTrigger.refresh();
+};
+configureScroll();
+motion.addEventListener("change", configureScroll);
 
-const lenis = new Lenis({
-  lerp: 0.06,
-  smoothWheel: true,
-  wheelMultiplier: 0.72,
-  touchMultiplier: 0.85,
-  syncTouch: true,
-  syncTouchLerp: 0.12,
-  autoResize: true,
-});
+const root = ReactDOM.createRoot(document.getElementById("root")!);
+root.render(<React.StrictMode><App /></React.StrictMode>);
 
-window.__antaraLenis = lenis;
-lenis.on("scroll", ScrollTrigger.update);
-
-gsap.ticker.add((time) => {
-  lenis.raf(time * 1000);
-});
-gsap.ticker.lagSmoothing(0);
-
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    motion.removeEventListener("change", configureScroll);
+    gsap.ticker.remove(tick);
+    lenis?.destroy();
+    delete window.__antaraLenis;
+    root.unmount();
+  });
+}

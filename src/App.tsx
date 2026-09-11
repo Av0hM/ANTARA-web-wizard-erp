@@ -1,7 +1,7 @@
 import { animate, stagger } from "animejs";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type {
   AnchorHTMLAttributes,
   FormEvent,
@@ -9,27 +9,14 @@ import type {
   MouseEvent,
   ReactNode,
 } from "react";
-import { Document, Page } from "react-pdf";
+import journeyVideo from "./assets/journey.mp4";
 import antarLogo from "./assets/ANTARA_logo_badge-modified.png";
 import { VideoScrubber } from "./components/VideoScrubber";
 import "./App.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Configure pdf.js worker
-if (typeof window !== 'undefined') {
-  import('pdfjs-dist').then((pdfjsLib) => {
-    if (pdfjsLib.GlobalWorkerOptions) {
-      import('pdfjs-dist/build/pdf.worker.min.mjs').then((module) => {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = module.default;
-      }).catch(() => {
-        // Fallback to CDN
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
-      });
-    }
-  });
-}
+const DocumentReader = lazy(() => import("./components/DocumentReader"));
 
 type PageId =
   | "home"
@@ -499,14 +486,6 @@ const ADMIN_TOKEN_KEY = "antara-admin-token";
 
 const clamp = (value: number, min = 0, max = 1) =>
   Math.min(max, Math.max(min, value));
-
-const sceneVisibility = (progress: number, index: number, total: number) => {
-  const start = index / total;
-  const end = (index + 1) / total;
-  const local = clamp((progress - start) / (end - start));
-  const centered = 1 - Math.abs(local * 2 - 1);
-  return 0.92 + centered * 0.08;
-};
 
 const escapeHtml = (value: string) =>
   value
@@ -1265,129 +1244,6 @@ function ImageViewer({
   );
 }
 
-function DocumentReader({
-  title,
-  pdfUrl,
-  onClose,
-  pageLabel,
-}: {
-  title: string;
-  pdfUrl: string;
-  onClose: () => void;
-  pageLabel?: string;
-}) {
-  const [page, setPage] = useState(1);
-  const [numPages, setNumPages] = useState<number | null>(null);
-  const [pdfError, setPdfError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  const onDocumentLoadSuccess = ({ numPages: pageCount }: { numPages: number }) => {
-    setNumPages(pageCount);
-    setPdfError(null);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && (numPages === null || newPage <= numPages)) {
-      setPage(newPage);
-    }
-  };
-
-  return (
-    <section className="document-reader" role="dialog" aria-modal="true">
-      <button
-        type="button"
-        className="document-reader__backdrop"
-        aria-label="Close document reader"
-        onClick={onClose}
-      />
-      <div className="document-reader__shell">
-        <div className="document-reader__head">
-          <div>
-            <p className="panel-eyebrow">Newsletter Archive</p>
-            <h3>{title}</h3>
-            <p className="content-copy">
-              {pageLabel || "Read the full PDF in the embedded document viewer."}
-            </p>
-          </div>
-          <button
-            type="button"
-            className="document-reader__close"
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
-
-        <div className="document-reader__toolbar" aria-label="Document controls">
-          <button type="button" onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
-            Previous Page
-          </button>
-          <button type="button" onClick={() => handlePageChange(page + 1)} disabled={numPages !== null && page >= numPages}>
-            Next Page
-          </button>
-          <button type="button" onClick={() => setPage(1)}>
-            Reset
-          </button>
-          <a href={pdfUrl} target="_blank" rel="noreferrer">
-            Open PDF
-          </a>
-          <a href={pdfUrl} download>
-            Download
-          </a>
-          <span>Page {page}{numPages ? ` / ${numPages}` : ''}</span>
-        </div>
-        <div className="document-reader__frame">
-          {pdfError ? (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: 'white',
-              padding: '2rem',
-              textAlign: 'center',
-            }}>
-              <p>{pdfError}</p>
-              <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--color-accent)', marginTop: '1rem', display: 'inline-block' }}>
-                Open PDF directly
-              </a>
-            </div>
-          ) : (
-            <Document
-              file={pdfUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={(error) => {
-                console.error('[DocumentReader] PDF load error:', error);
-                setPdfError('Failed to load PDF. Please try opening it directly.');
-              }}
-              loading={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-tertiary)' }}>Loading PDF...</div>}
-              error={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white', padding: '2rem', textAlign: 'center' }}>Failed to load PDF</div>}
-            >
-              <Page
-                pageNumber={page}
-                width={800}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-              />
-            </Document>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function MissionTimeline() {
   const nodes = missionTimeline;
   const currentIndex = nodes.findIndex((n) => n.status === "current");
@@ -1494,17 +1350,13 @@ function HomePage({
     .slice(0, 6);
   useEffect(() => {
     const handleScroll = () => {
-      const maxScroll =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const next = maxScroll <= 0 ? 0 : window.scrollY / maxScroll;
-      const clampedProgress = clamp(next);
-
       if (scrollFrameRef.current !== null) {
         return;
       }
 
       scrollFrameRef.current = window.requestAnimationFrame(() => {
-        setProgress(clampedProgress);
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        setProgress(clamp(maxScroll <= 0 ? 0 : window.scrollY / maxScroll));
         scrollFrameRef.current = null;
       });
     };
@@ -1568,18 +1420,6 @@ function HomePage({
     }
 
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        ".mission-copy__inner",
-        { autoAlpha: 0, y: 64 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 1.1,
-          ease: "power3.out",
-          stagger: 0.07,
-        },
-      );
-
       gsap.utils
         .toArray<HTMLElement>(
           ".info-hub__intro, .archive-section, .database-feed__card, .gallery-card, .site-footer__brand, .site-footer__column",
@@ -1615,8 +1455,8 @@ function HomePage({
         ? animate(premiumTargets, {
             translateY: [0, -2],
             duration: 2300,
-            easing: "easeInOutSine",
-            direction: "alternate",
+            ease: "inOutSine",
+            alternate: true,
             delay: stagger(70),
             loop: true,
           })
@@ -1633,9 +1473,8 @@ function HomePage({
   return (
     <div className="mission-shell" ref={shellRef}>
       <VideoScrubber
-        src="/journey.mp4"
+        src={journeyVideo}
         containerSelector="#journey"
-        scrub={1.5}
         poster="/journey-poster.webp"
       />
       <SiteHeader
@@ -1660,22 +1499,13 @@ function HomePage({
 
       <main className="mission-scroll">
         <div className="journey-section" id="journey">
-          {missionScenes.map((scene, index) => {
-            const intensity = sceneVisibility(
-              progress,
-              index,
-              missionScenes.length,
-            );
+          {missionScenes.map((scene) => {
 
             return (
               <section className="mission-panel" key={scene.id} id={scene.id}>
                 <div className={`mission-copy mission-copy--${scene.align}`}>
                   <div
                     className="mission-copy__inner"
-                    style={{
-                      opacity: intensity,
-                      transform: `translate3d(0, ${(1 - intensity) * 18}px, 0) scale(${0.99 + (intensity - 0.92) * 0.05})`,
-                    }}
                   >
                     {scene.id === "boot" ? (
                       <div className="mission-copy__brand">
@@ -2482,12 +2312,15 @@ function NewsletterPage({ posts }: { posts: CmsPost[] }) {
           </article>
         </div>
         {documentState ? (
+          <Suspense fallback={<div role="status">Loading document reader…</div>}>
           <DocumentReader
+            key={documentState.pdfUrl}
             title={documentState.title}
             pdfUrl={documentState.pdfUrl}
             pageLabel={documentState.pageLabel}
             onClose={() => setDocumentState(null)}
           />
+          </Suspense>
         ) : null}
       </section>
     </StandardPage>
@@ -2666,10 +2499,14 @@ function AdminPage() {
     });
   };
 
+  const adminRequestRef = useRef<AbortController | null>(null);
   const loadAdminPosts = async () => {
     if (!token) {
       return;
     }
+    adminRequestRef.current?.abort();
+    const controller = new AbortController();
+    adminRequestRef.current = controller;
     setLoadingPosts(true);
     setPostsError("");
 
@@ -2687,6 +2524,7 @@ function AdminPage() {
       }
       const response = await fetch(`/api/posts?${query.toString()}`, {
         headers: authHeaders,
+        signal: controller.signal,
       });
       if (!response.ok) {
         if (response.status === 401) {
@@ -2698,13 +2536,15 @@ function AdminPage() {
       }
 
       const data = (await response.json()) as PaginatedPostsResponse;
+      if (controller.signal.aborted) return;
       setPosts(data.items ?? []);
     } catch (error) {
+      if (controller.signal.aborted) return;
       setPostsError(
         error instanceof Error ? error.message : "Failed to load admin posts.",
       );
     } finally {
-      setLoadingPosts(false);
+      if (!controller.signal.aborted) setLoadingPosts(false);
     }
   };
 
@@ -2720,6 +2560,7 @@ function AdminPage() {
       return;
     }
     loadAdminPosts();
+    return () => adminRequestRef.current?.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, search, statusFilter]);
 

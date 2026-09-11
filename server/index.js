@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { installMediaRoutes } from "./media-routes.js";
 import compression from "compression";
 import express from "express";
 import helmet from "helmet";
@@ -77,6 +78,7 @@ const pool = new Pool({
 const logger = pino({
   level: LOG_LEVEL,
   base: undefined,
+  redact: ["req.headers.authorization", "req.headers.cookie", 'res.headers["set-cookie"]'],
 });
 
 const redisClient = REDIS_URL
@@ -186,19 +188,12 @@ const defaultOrigins = [
 const allowedOrigins = new Set(
   configuredOrigins.length > 0 ? configuredOrigins : defaultOrigins,
 );
-console.log("CORS DEBUG - allowedOrigins:", JSON.stringify([...allowedOrigins]));
-console.log("CORS DEBUG - CORS_ORIGINS raw:", JSON.stringify(process.env.CORS_ORIGINS ?? null));
-console.log("CORS DEBUG - SITE_URL raw:", JSON.stringify(process.env.SITE_URL ?? null));
 
 const requestBuckets = new Map();
 const queryCache = new Map();
 const nowMs = () => Date.now();
 const apiRateLimit = (req, res, next) => {
-  const ip = String(
-    req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "unknown",
-  )
-    .split(",")[0]
-    .trim();
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
   const key = ip || "unknown";
   const current = requestBuckets.get(key);
   const now = nowMs();
@@ -297,11 +292,11 @@ const clearCmsCache = async () => {
 
 const sanitizeText = (value, max = 4000) =>
   String(value ?? "")
-    .replace(/\u0000/g, "")
+    .replaceAll("\0", "")
     .trim()
     .slice(0, max);
 const sanitizeContent = (value, max = 200_000) =>
-  sanitizeHtml(String(value ?? "").replace(/\u0000/g, ""), {
+  sanitizeHtml(String(value ?? "").replaceAll("\0", ""), {
     allowedTags: [
       "p",
       "br",
@@ -422,8 +417,9 @@ const signToken = (payload) => {
 };
 
 const verifyToken = (token) => {
-  const [body, signature] = String(token ?? "").split(".");
-  if (!body || !signature) {
+  const parts = String(token ?? "").split(".");
+  const [body, signature] = parts;
+  if (parts.length !== 2 || !body || !signature) {
     return null;
   }
   const expectedSignature = crypto
@@ -435,7 +431,7 @@ const verifyToken = (token) => {
   }
   try {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
-    if (!payload?.exp || Date.now() > Number(payload.exp)) {
+    if (!Number.isFinite(payload?.exp) || Date.now() >= payload.exp) {
       return null;
     }
     return payload;
@@ -550,7 +546,7 @@ const toLocalAbsoluteFromPublicPath = (publicPath) => {
   const relative = publicPath.replace(/^\/uploads\//, "");
   const absolute = path.resolve(uploadsDir, relative);
   const uploadsRoot = path.resolve(uploadsDir);
-  if (!absolute.startsWith(uploadsRoot)) {
+  if (!absolute.startsWith(uploadsRoot + path.sep)) {
     return "";
   }
   return absolute;
@@ -725,6 +721,13 @@ const safeDeleteAttachment = async (assetRef) => {
 fs.mkdirSync(uploadsDir, { recursive: true });
 
 const app = express();
+// Set only for your known reverse-proxy topology (for example TRUST_PROXY=1).
+const trustedProxy = String(process.env.TRUST_PROXY ?? "").trim();
+if (trustedProxy) {
+  app.set("trust proxy", /^\d+$/.test(trustedProxy)
+    ? Number(trustedProxy)
+    : trustedProxy.split(",").map(value => value.trim()));
+}
 const asyncRoute = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
 
@@ -738,63 +741,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(uploadsDir));
 
-// Serve video files with proper CORS, Range requests, and caching headers
-function serveVideo(req, res, videoPath, contentType) {
-  // Check if file exists
-  if (!fs.existsSync(videoPath)) {
-    logger.warn({ path: videoPath }, 'Video file not found');
-    return res.status(404).json({ error: 'Video file not found' });
-  }
-
-  const stat = fs.statSync(videoPath);
-  const fileSize = stat.size;
-  const range = req.headers.range;
-
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Range, Content-Type");
-  res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges");
-  res.setHeader("Accept-Ranges", "bytes");
-  res.setHeader("Content-Type", contentType);
-  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-
-  if (range) {
-    const parts = range.replace(/bytes=/, "").split("-");
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-    const chunksize = (end - start) + 1;
-
-    const file = fs.createReadStream(videoPath, { start, end });
-    const head = {
-      "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-      "Content-Length": chunksize,
-      "Content-Type": contentType,
-    };
-
-    res.writeHead(206, head);
-    file.pipe(res);
-  } else {
-    res.setHeader("Content-Length", fileSize);
-    res.setHeader("Accept-Ranges", "bytes");
-    res.sendFile(videoPath);
-  }
-}
-
-app.get("/journey.mp4", (req, res) => {
-  const videoPath = path.join(rootDir, "dist", "journey.mp4");
-  serveVideo(req, res, videoPath, "video/mp4");
-});
-
-app.get("/journey-poster.webp", (req, res) => {
-  const posterPath = path.join(rootDir, "dist", "journey-poster.webp");
-  if (!fs.existsSync(posterPath)) {
-    logger.warn({ path: posterPath }, 'Poster file not found');
-    return res.status(404).json({ error: 'Poster file not found' });
-  }
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-  res.sendFile(posterPath);
-});
+installMediaRoutes(app, rootDir);
 
 app.use(express.static(path.join(rootDir, "public")));
 app.use(
@@ -808,40 +755,6 @@ app.use(
   }),
 );
 
-// app.use((req, res, next) => {
-//   const origin = normalizeOrigin(req.headers.origin ?? "");
-//   const allowAll = allowedOrigins.has("*");
-//   const isAllowed = !origin || allowAll || allowedOrigins.has(origin);
-
-//   if (origin && isAllowed) {
-//     res.setHeader("Access-Control-Allow-Origin", origin);
-//     res.setHeader("Vary", "Origin");
-//     res.setHeader(
-//       "Access-Control-Allow-Headers",
-//       "Content-Type, Authorization",
-//     );
-//     res.setHeader(
-//       "Access-Control-Allow-Methods",
-//       "GET,POST,PUT,DELETE,OPTIONS",
-//     );
-//     res.setHeader("Access-Control-Allow-Credentials", "true");
-//   }
-
-//   if (req.method === "OPTIONS") {
-//     if (!isAllowed) {
-//       res.status(403).json({ error: "Origin not allowed." });
-//       return;
-//     }
-//     res.status(204).end();
-//     return;
-//   }
-
-//   if (origin && !isAllowed) {
-//     res.status(403).json({ error: "Origin not allowed." });
-//     return;
-//   }
-//   next();
-// });
 app.use((req, res, next) => {
   // ✅ IMPORTANT: allow frontend static files
   if (
@@ -861,13 +774,11 @@ app.use((req, res, next) => {
   const origin = normalizeOrigin(req.headers.origin ?? "");
   const allowAll = allowedOrigins.has("*");
   const isAllowed = !origin || allowAll || allowedOrigins.has(origin);
-  if (req.method === "POST" && req.path.includes("login")) {
-    console.log("CORS DEBUG - incoming origin:", JSON.stringify(req.headers.origin ?? null), "normalized:", JSON.stringify(origin), "isAllowed:", isAllowed);
-  }
+
 
   if (origin && isAllowed) {
     res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Vary", "Origin");
+    res.vary("Origin");
     res.setHeader(
       "Access-Control-Allow-Headers",
       "Content-Type, Authorization",
@@ -938,10 +849,6 @@ const upload = multer({
 const loginHandler = (req, res) => {
   const username = sanitizeText(req.body.username, 120);
   const password = String(req.body.password ?? "");
-  console.log("INPUT USER:", username);
-  console.log("INPUT PASS:", password);
-  console.log("ENV USER:", ADMIN_USERNAME);
-  console.log("ENV PASS:", ADMIN_PASSWORD);
   if (!username || !password) {
     res.status(400).json({ error: "Username and password are required." });
     return;
@@ -1620,13 +1527,11 @@ app.post(
     res.json({ ok: true, ...backup });
   }),
 );
-console.log("DIST DIR:", distDir);
-console.log("EXISTS:", fs.existsSync(distDir));
 if (fs.existsSync(distDir)) {
   app.use(express.static(distDir));
 
   app.get(/.*/, (req, res, next) => {
-    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+    if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || path.extname(req.path)) {
       next();
       return;
     }
@@ -1635,7 +1540,12 @@ if (fs.existsSync(distDir)) {
 }
 
 const port = Number(process.env.PORT ?? 8787);
-app.use((error, _req, res, _next) => {
+app.use((error, _req, res, next) => {
+  if (res.headersSent) return next(error);
+  if ([400, 404, 413, 416].includes(error.status)) {
+    res.status(error.status).json({ error: error.status === 404 ? "Not found." : "Invalid request." });
+    return;
+  }
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
       res.status(413).json({
