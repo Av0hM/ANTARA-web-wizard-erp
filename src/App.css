@@ -3178,20 +3178,7 @@
   }
 }
 
-@keyframes logoOrbit {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg) translateX(4.4rem) rotate(0deg);
-    opacity: 0.85;
-  }
-  45% {
-    transform: translate(-50%, -50%) rotate(162deg) translateX(4.4rem) rotate(-162deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) rotate(360deg) translateX(4.4rem) rotate(-360deg);
-    opacity: 0.85;
-  }
-}
+/* logoOrbit keyframes removed — logo is static now to improve performance */
 
 @keyframes shimmer {
   0% {
@@ -3432,10 +3419,12 @@
   padding: 0.4rem;
   border-radius: 1.3rem;
   background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 30px rgba(0,0,0,0.16);
-  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 20px rgba(0,0,0,0.12);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   overflow: visible;
   isolation: isolate;
+  will-change: transform, opacity;
 }
 
 .mission-copy__logo-shell::before {
@@ -3447,13 +3436,15 @@
   height: 2.1rem;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 244, 214, 0.98) 0%, rgba(255, 197, 110, 0.72) 24%, rgba(201, 120, 43, 0.18) 54%, rgba(201, 120, 43, 0) 74%);
-  filter: blur(10px);
+  /* reduced blur for less repaint pressure */
+  filter: blur(4px);
   pointer-events: none;
-  transform: translate(-50%, -50%) rotate(0deg) translateX(3rem) rotate(0deg);
+  transform: translate3d(-50%, -50%, 0) translate3d(3rem, 0, 0);
   transform-origin: center;
-  animation: logoOrbit 3.8s ease-in-out infinite;
   opacity: 0.95;
   z-index: -1;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .mission-copy__logo-shell::after {
@@ -3466,10 +3457,11 @@
   box-shadow: 0 0 0 4px rgba(201, 120, 43, 0.16), 0 0 16px rgba(242, 217, 185, 0.6);
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(0deg) translateX(3rem) rotate(0deg);
+  transform: translate3d(-50%, -50%, 0) translate3d(3rem, 0, 0);
   transform-origin: center;
-  animation: logoOrbit 3.8s ease-in-out infinite;
   z-index: 1;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .mission-copy__logo {
@@ -3478,7 +3470,7 @@
   height: auto;
   flex: 0 0 auto;
   object-fit: contain;
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.2)) saturate(0.95) contrast(1.02) brightness(0.96);
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.18)) saturate(0.95) contrast(1.02) brightness(0.96);
   opacity: 0.9;
   mix-blend-mode: screen;
   pointer-events: none;
@@ -3486,6 +3478,8 @@
   border-radius: 1rem;
   position: relative;
   z-index: 2;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .mission-copy--left .mission-copy__brand {
@@ -3523,15 +3517,20 @@
   .mission-copy__logo-shell::before {
     width: 1.45rem;
     height: 1.45rem;
-    filter: blur(7px);
-    transform: translate(-50%, -50%) rotate(0deg) translateX(2.1rem) rotate(0deg);
+    /* reduced blur for mobile */
+    filter: blur(4px);
+    transform: translate3d(-50%, -50%, 0) rotate(0deg) translate3d(2.1rem, 0, 0) rotate(0deg);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
   }
 
   .mission-copy__logo-shell::after {
     width: 0.8rem;
     height: 0.8rem;
     box-shadow: 0 0 0 3px rgba(201, 120, 43, 0.16), 0 0 10px rgba(242, 217, 185, 0.5);
-    transform: translate(-50%, -50%) rotate(0deg) translateX(2.1rem) rotate(0deg);
+    transform: translate3d(-50%, -50%, 0) rotate(0deg) translate3d(2.1rem, 0, 0) rotate(0deg);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
   }
 
   .mission-copy__logo {
@@ -3542,22 +3541,7 @@
 /* ==========================================================================
    MOBILE KEYFRAMES - Logo Orbit Animation (Mobile)
    ========================================================================== */
-@media (max-width: 720px) {
-  @keyframes logoOrbit {
-    0% {
-      transform: translate(-50%, -50%) rotate(0deg) translateX(2.1rem) rotate(0deg);
-      opacity: 0.82;
-    }
-    45% {
-      transform: translate(-50%, -50%) rotate(162deg) translateX(2.1rem) rotate(-162deg);
-      opacity: 0.96;
-    }
-    100% {
-      transform: translate(-50%, -50%) rotate(360deg) translateX(2.1rem) rotate(-360deg);
-      opacity: 0.82;
-    }
-  }
-}
+/* mobile logoOrbit keyframes removed */
 
 /* ==========================================================================
    PARTNERS DOWNLOAD BUTTON - CTA Button for Partners Page
