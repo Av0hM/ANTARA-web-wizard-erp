@@ -1,3 +1,5 @@
+import { initGallery, installGalleryRoutes } from "./gallery-routes.js";
+import { installSocialPreviewRoutes } from "./social-preview.js";
 import "dotenv/config";
 import { installMediaRoutes } from "./media-routes.js";
 import compression from "compression";
@@ -24,7 +26,7 @@ import sanitizeHtml from "sanitize-html";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
-const uploadsDir = path.join(rootDir, "uploads");
+const uploadsDir = path.resolve(process.env.UPLOAD_DIR || path.join(rootDir, "uploads"));
 const distDir = path.join(rootDir, "dist");
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "change-me";
@@ -131,6 +133,9 @@ const initDatabase = async () => {
     ALTER TABLE posts
     ADD COLUMN IF NOT EXISTS attachment_thumb_path TEXT DEFAULT '';
   `);
+
+  await pool.query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS version INTEGER NOT NULL DEFAULT 1");
+  await initGallery(pool);
 
   const seedCountResult = await pool.query(
     "SELECT COUNT(*)::int AS total FROM posts",
@@ -689,6 +694,17 @@ const processAttachmentUpload = async (file) => {
       attachmentThumbnailPath: "",
     };
   }
+  if (IMAGE_MIME_TYPES.has(file.mimetype)) {
+    try {
+      const metadata = await sharp(file.path).metadata();
+      if (!["jpeg", "png", "webp"].includes(metadata.format)) throw new Error("Unsupported image");
+    } catch { throw Object.assign(new Error("Invalid image attachment."), { status: 400 }); }
+  } else if (file.mimetype === "application/pdf") {
+    const handle = await fs.promises.open(file.path, "r");
+    const header = Buffer.alloc(5);
+    try { await handle.read(header, 0, 5, 0); } finally { await handle.close(); }
+    if (header.toString() !== "%PDF-") throw Object.assign(new Error("Invalid PDF attachment."), { status: 400 });
+  }
   const localPath = toAttachmentPath(file.path);
   let thumbnailLocalPath = "";
   try {
@@ -781,7 +797,7 @@ app.use((req, res, next) => {
     res.vary("Origin");
     res.setHeader(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization",
+      "Content-Type, Authorization, If-Match",
     );
     res.setHeader(
       "Access-Control-Allow-Methods",
@@ -816,7 +832,7 @@ const storage = multer.diskStorage({
     callback(null, destinationDir);
   },
   filename: (_, file, callback) => {
-    const ext = path.extname(file.originalname).toLowerCase();
+    const ext = ({ "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "application/pdf": ".pdf" })[file.mimetype] || ".invalid";
     const suffix = crypto.randomBytes(8).toString("hex");
     callback(null, `${Date.now()}-${suffix}${ext}`);
   },
@@ -878,6 +894,14 @@ app.get("/api/health", (_, res) => {
 
 app.post("/api/auth/login", loginHandler);
 app.post("/api/login", loginHandler);
+
+installGalleryRoutes(app, {
+  pool, requireAdmin, uploadsDir,
+  storeAsset: maybeCopyLocalToS3, publicUrl: toPublicAssetUrl,
+  deleteAsset: deleteAssetRef, clearCache: clearCmsCache,
+  videoMaxMB: Math.max(1, Number(process.env.GALLERY_VIDEO_MAX_MB) || 100),
+  imageMaxMB: UPLOAD_MAX_MB,
+});
 
 app.get(
   "/api/posts",
@@ -957,6 +981,7 @@ app.get(
       `
       SELECT
         id::int AS id,
+        version,
         slug,
         title,
         excerpt,
@@ -1029,6 +1054,7 @@ app.get(
       `
       SELECT
         id::int AS id,
+        version,
         slug,
         title,
         excerpt,
@@ -1071,6 +1097,10 @@ app.post(
   "/api/posts",
   requireAdmin,
   upload.single("attachment"),
+  (req, res, next) => {
+    res.on("finish", () => { if (res.statusCode >= 400 && req.file) deleteLocalFile(req.file.path); });
+    next();
+  },
   asyncRoute(async (req, res) => {
     const title = sanitizeText(req.body.title, 280);
     const excerpt = sanitizeText(req.body.excerpt, 2000);
@@ -1079,7 +1109,7 @@ app.post(
     const seoTitle = sanitizeText(req.body.seoTitle, 280);
     const seoDescription = sanitizeText(req.body.seoDescription, 320);
     const coverImage = sanitizeText(req.body.coverImage, 1200);
-    const isPublished = parsePublishedFlag(req.body, true);
+    const isPublished = parsePublishedFlag(req.body, false);
     const publishedAtRaw = sanitizeText(req.body.publishedAt, 80);
 
     if (!title) {
@@ -1115,6 +1145,7 @@ app.post(
     const { attachmentPath, attachmentMime, attachmentThumbnailPath } =
       await processAttachmentUpload(req.file);
 
+    try {
     await pool.query(
       `
       INSERT INTO posts
@@ -1141,6 +1172,10 @@ app.post(
       ],
     );
 
+    } catch (error) {
+      await safeDeleteAttachment(attachmentPath); await safeDeleteAttachment(attachmentThumbnailPath);
+      throw error;
+    }
     await clearCmsCache();
     res.status(201).json({ ok: true, slug });
   }),
@@ -1150,11 +1185,15 @@ app.put(
   "/api/posts/:slug",
   requireAdmin,
   upload.single("attachment"),
+  (req, res, next) => {
+    res.on("finish", () => { if (res.statusCode >= 400 && req.file) deleteLocalFile(req.file.path); });
+    next();
+  },
   asyncRoute(async (req, res) => {
     const targetSlug = sanitizeText(req.params.slug, 160).toLowerCase();
     const existingResult = await pool.query(
       `
-      SELECT id, slug, title, excerpt, content, category, cover_image, attachment_path, attachment_thumb_path, attachment_mime, published_at, seo_title, seo_description, is_published
+      SELECT id, slug, title, excerpt, content, category, cover_image, attachment_path, attachment_thumb_path, attachment_mime, published_at, seo_title, seo_description, is_published, version
       FROM posts
       WHERE slug = $1
       LIMIT 1
@@ -1168,6 +1207,11 @@ app.put(
     }
 
     const existing = existingResult.rows[0];
+    if (Number(req.body.expectedVersion) !== existing.version) {
+      if (req.file) deleteLocalFile(req.file.path);
+      res.status(409).json({ error: "This entry changed since you opened it. Copy your unsaved edits, then reload the entry before saving." });
+      return;
+    }
     const hasField = (name) =>
       Object.prototype.hasOwnProperty.call(req.body, name);
 
@@ -1207,6 +1251,10 @@ app.put(
     const category = hasField("category")
       ? sanitizeText(req.body.category, 80) || "blog"
       : existing.category;
+    if (existing.category === "gallery" && category !== "gallery") {
+      res.status(400).json({ error: "Albums must keep the gallery category. Create a separate post instead." });
+      return;
+    }
     const seoTitle = hasField("seoTitle")
       ? sanitizeText(req.body.seoTitle, 280)
       : existing.seo_title;
@@ -1238,22 +1286,20 @@ app.put(
     const removeAttachment = parseBoolean(req.body.removeAttachment, false);
 
     if (req.file) {
-      await safeDeleteAttachment(attachmentPath);
-      await safeDeleteAttachment(attachmentThumbnailPath);
       const processed = await processAttachmentUpload(req.file);
       attachmentPath = processed.attachmentPath;
       attachmentThumbnailPath = processed.attachmentThumbnailPath;
       attachmentMime = processed.attachmentMime;
     } else if (removeAttachment) {
-      await safeDeleteAttachment(attachmentPath);
-      await safeDeleteAttachment(attachmentThumbnailPath);
       attachmentPath = "";
       attachmentThumbnailPath = "";
       attachmentMime = "";
     }
 
     const now = new Date().toISOString();
-    await pool.query(
+    let updated;
+    try {
+    updated = await pool.query(
       `
       UPDATE posts
       SET
@@ -1270,8 +1316,9 @@ app.put(
         seo_title = $11,
         seo_description = $12,
         is_published = $13,
-        updated_at = $14::timestamptz
-      WHERE id = $15
+        updated_at = $14::timestamptz,
+        version = version + 1
+      WHERE id = $15 AND version = $16
     `,
       [
         requestedSlugRaw,
@@ -1289,9 +1336,23 @@ app.put(
         isPublished,
         now,
         existing.id,
+        existing.version,
       ],
     );
 
+    } catch (error) {
+      if (req.file) { await safeDeleteAttachment(attachmentPath); await safeDeleteAttachment(attachmentThumbnailPath); }
+      throw error;
+    }
+    if (!updated.rowCount) {
+      if (req.file) { await safeDeleteAttachment(attachmentPath); await safeDeleteAttachment(attachmentThumbnailPath); }
+      res.status(409).json({ error: "Another admin changed this entry. Reload it before saving." });
+      return;
+    }
+    if (req.file || removeAttachment) {
+      await safeDeleteAttachment(existing.attachment_path);
+      await safeDeleteAttachment(existing.attachment_thumb_path);
+    }
     await clearCmsCache();
     res.json({ ok: true, slug: requestedSlugRaw });
   }),
@@ -1303,7 +1364,7 @@ app.delete(
   asyncRoute(async (req, res) => {
     const slug = sanitizeText(req.params.slug, 160).toLowerCase();
     const existingResult = await pool.query(
-      "SELECT id, attachment_path, attachment_thumb_path FROM posts WHERE slug = $1 LIMIT 1",
+      "SELECT id, version, attachment_path, attachment_thumb_path FROM posts WHERE slug = $1 LIMIT 1",
       [slug],
     );
     if (existingResult.rowCount === 0) {
@@ -1311,7 +1372,17 @@ app.delete(
       return;
     }
     const existing = existingResult.rows[0];
-    await pool.query("DELETE FROM posts WHERE id = $1", [existing.id]);
+    if (Number(req.headers["if-match"]) !== existing.version) {
+      res.status(409).json({ error: "This entry changed. Refresh the list before deleting it." });
+      return;
+    }
+    const media = await pool.query("SELECT src, thumbnail FROM gallery_media WHERE album_id = $1", [existing.id]);
+    const deleted = await pool.query("DELETE FROM posts WHERE id = $1 AND version = $2", [existing.id, existing.version]);
+    if (!deleted.rowCount) {
+      res.status(409).json({ error: "This entry changed. Refresh the list before deleting it." });
+      return;
+    }
+    for (const file of media.rows) { await deleteAssetRef(file.src); await deleteAssetRef(file.thumbnail); }
     await safeDeleteAttachment(existing.attachment_path ?? "");
     await safeDeleteAttachment(existing.attachment_thumb_path ?? "");
     await clearCmsCache();
@@ -1481,6 +1552,9 @@ const runBackup = async (reason = "manual") => {
     "utf8",
   );
 
+  const gallery = await pool.query("SELECT * FROM gallery_media ORDER BY album_id, position, created_at");
+  fs.writeFileSync(path.join(backupPath, "gallery-media.json"), JSON.stringify(gallery.rows, null, 2), "utf8");
+
   if (BACKUP_INCLUDE_UPLOADS && !s3Enabled && fs.existsSync(uploadsDir)) {
     fs.cpSync(uploadsDir, path.join(backupPath, "uploads"), {
       recursive: true,
@@ -1528,15 +1602,20 @@ app.post(
   }),
 );
 if (fs.existsSync(distDir)) {
-  app.use(express.static(distDir));
-
-  app.get(/.*/, (req, res, next) => {
-    if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || path.extname(req.path)) {
-      next();
-      return;
-    }
-    res.sendFile(path.join(distDir, "index.html"));
+  installSocialPreviewRoutes(app, {
+    distDir,
+    siteUrl: process.env.SITE_URL,
+    findPost: async (slug) => {
+      const result = await pool.query(`
+        SELECT title, excerpt, seo_title AS "seoTitle",
+          seo_description AS "seoDescription", cover_image AS "coverImage",
+          published_at AS "publishedAt"
+        FROM posts WHERE slug = $1 AND is_published = TRUE LIMIT 1
+      `, [slug]);
+      return result.rows[0];
+    },
   });
+  app.use(express.static(distDir));
 }
 
 const port = Number(process.env.PORT ?? 8787);

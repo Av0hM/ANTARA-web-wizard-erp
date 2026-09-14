@@ -1,0 +1,38 @@
+{
+  "home": {
+    "title": "Project Antara - Student-Built CubeSat Mission, BITS Goa",
+    "description": "Project Antara is a BITS Goa student-built CubeSat studying radiation in Low Earth Orbit, with a focus on the South Atlantic Anomaly. Under-Grad students. One satellite."
+  },
+  "partners": {
+    "title": "Partners - Project Antara",
+    "description": "Support Project Antara through sponsorship, hardware, technical collaboration, or mentorship. Help a student satellite reach orbit."
+  },
+  "events": {
+    "title": "Events - Project Antara",
+    "description": "The public timeline of Antara milestones, subsystem reviews, workshops, partner sessions, and launch preparation."
+  },
+  "mini-projects": {
+    "title": "Mini-Projects - Project Antara",
+    "description": "Three student-owned engineering tracks, Ground Station, Payload Development, and ADCS, that feed directly into the Antara spacecraft."
+  },
+  "ground-station": {
+    "title": "Ground Station Mini-Project - Project Antara",
+    "description": "Build the communications and operations layer that connects Antara to the team on the ground. Tracking, telemetry, and student-run mission ops."
+  },
+  "payload-development": {
+    "title": "Payload Development Mini-Project - Project Antara",
+    "description": "Design the detector stack, make shielding decisions, and build the pipeline from raw measurements to usable science data."
+  },
+  "adcs": {
+    "title": "Attitude Control and Determination - Project Antara",
+    "description": "Sensors, actuators, control logic, and simulation for a CubeSat that knows where it's pointing and can correct itself when it doesn't."
+  },
+  "newsletter": {
+    "title": "Newsletter - Project Antara",
+    "description": "Monthly mission updates from the team. Honest progress notes, subsystem milestones, and the occasional hard lesson."
+  },
+  "admin": {
+    "title": "Admin Dashboard - Project Antara",
+    "description": "Authenticated content management dashboard for the Antara mission team."
+  }
+}

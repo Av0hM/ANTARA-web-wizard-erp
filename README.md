@@ -267,3 +267,72 @@ curl.exe -X POST "http://localhost:8787/api/posts" `
 - Retention is configurable (`BACKUP_RETENTION_DAYS`)
 - Backups can be triggered manually from `/admin` or `/api/admin/backups/run`
 - Local upload snapshots can be included when `BACKUP_INCLUDE_UPLOADS=true`
+
+### Shared-link previews
+
+Production Express responses include Open Graph and Twitter card metadata before
+React runs. Set `SITE_URL` to the public HTTPS origin so canonical and image URLs
+use the correct domain. Published `/posts/:slug` links use the post's SEO fields
+and cover image; other pages and posts without a usable cover use
+`public/social-preview.png`. Draft or missing posts return 404 without exposing
+post metadata. Page titles and descriptions live in `shared/page-meta.json`.
+
+Regenerate the branded 1200 × 630 card with
+`node scripts/create-social-preview.mjs`. Verify the routes with
+`node --test tests/social-preview.test.js tests/media-routes.test.js`.
+Deploy the rebuilt frontend together with `server/` and `shared/`; static-only
+hosting does not run the Express metadata handler. Social platforms may retain
+previously cached previews until the link is fetched again.
+
+### Albums and protected admin workflows
+
+Create an album using **New album** in `/admin`. Save the draft, then upload
+multiple JPEG/PNG/WebP photos or MP4/WebM videos. Uploads are sequential and show
+per-file progress and failures. Add captions and image descriptions, reorder the
+files, and save captions/order separately. **Use as cover** selects a photo
+thumbnail; save the album details to apply it. Publish only when ready.
+Existing `gallery` posts remain albums, including their original image attachment.
+
+The public `/api/albums?page=1` endpoint returns paginated metadata, media counts,
+and cover thumbnails. `/api/albums/:slug` returns the media list only when an
+album is opened. The viewer mounts one full asset at a time; videos use native
+controls and `preload="none"`. Uploads use the existing local/S3 storage system.
+Drafts hide album metadata from public endpoints; uploaded files, like existing
+post attachments, remain accessible to anyone who already knows their URL.
+
+Admin improvements include draft defaults, category/status/search filters,
+pagination, local-time date editing, existing-attachment removal, explicit
+publish/delete confirmations, and controls disabled during mutations. Publication
+dates label posts; they do not schedule future publication.
+Text drafts are retained in this browser tab's session storage with an explicit
+restore action. Unsaved text and media captions survive session expiry/relogin.
+Files cannot be restored after a page reload and must be selected again.
+
+Post updates require `expectedVersion` from the latest post response; deletes
+require that version in `If-Match`. Stale changes return 409 and preserve newer
+server data. Album caption/order updates use `expectedRevision`; single-media
+deletes use the album revision in `If-Match`. Reload after conflicts, preserving
+any text you want to reapply first. Existing attachments are deleted only after
+a successful database update.
+
+Deployment: rebuild and deploy frontend and backend together. Startup adds the
+`version` and `gallery_revision` columns to `posts` and creates `gallery_media`
+with a cascading foreign key. Backups now include `gallery-media.json` alongside
+`posts.json`; restore album records before their media rows. Local upload copies
+still depend on `BACKUP_INCLUDE_UPLOADS`; S3 media need storage-level backups.
+
+- `GALLERY_VIDEO_MAX_MB`: per-video limit, defaults to 100 MB. Configure the
+  reverse proxy upload limit and request timeout accordingly.
+- `UPLOAD_MAX_MB`: photo/attachment limit, defaults to 5 MB.
+- `UPLOAD_DIR`: optional local upload root (defaults to `uploads/`).
+
+Run the full database-backed regression suite against a **dedicated test
+PostgreSQL instance** with a user that can create databases:
+
+```bash
+TEST_DATABASE_URL=postgresql://user@localhost:5432/postgres node --test tests/admin-gallery.test.js tests/social-preview.test.js tests/media-routes.test.js
+```
+
+The suite creates and removes its own temporary database and upload/backup
+folders, and starts a test API on port 18879. Without `TEST_DATABASE_URL`, the
+admin/gallery database suite is skipped.

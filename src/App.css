@@ -3577,3 +3577,75 @@
   flex-shrink: 0;
 }
   */
+/* Album browsing: thumbnails on cards; only the selected full asset is mounted. */
+.gallery-card__media { display: grid; place-items: center; overflow: hidden; }
+.gallery-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-card__body small { display: block; margin-top: 1rem; color: #64748b; }
+.album-placeholder { font-size: .75rem; letter-spacing: .18em; color: #8395ad; }
+.album-more { display: block; margin: 1.5rem auto; padding: .8rem 1.4rem; }
+.album-dialog { width: min(1100px, 94vw); max-height: 92dvh; padding: 0; border: 1px solid #354254; border-radius: 12px; background: #0b111c; color: #eef3fa; }
+.album-dialog::backdrop { background: rgb(0 0 0 / .85); }
+.album-dialog__inner { padding: clamp(1rem, 3vw, 2rem); }
+.album-dialog header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.album-dialog h2 { margin: 0; font-size: clamp(1.3rem, 3vw, 2rem); }
+.album-dialog button, .album-more { border: 1px solid #536079; border-radius: 5px; background: #172334; color: #eef3fa; padding: .65rem 1rem; min-height: 44px; cursor: pointer; }
+.album-dialog button:disabled { opacity: .4; cursor: default; }
+.album-dialog button:focus-visible, .gallery-card:focus-visible { outline: 3px solid #7cc5ff; outline-offset: 3px; }
+.album-dialog__stage { height: min(58dvh, 620px); display: grid; place-items: center; background: #030609; }
+.album-dialog__stage img, .album-dialog__stage video { width: 100%; height: 100%; max-height: min(58dvh, 620px); object-fit: contain; }
+.album-dialog__navigation { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-top: 1rem; font-size: .85rem; }
+.album-caption { white-space: pre-wrap; line-height: 1.6; }
+.album-dialog__index { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
+.album-dialog__index button[aria-current="true"] { background: #315982; border-color: #9dcfff; }
+
+/* Admin workspace */
+.admin-workspace-summary { max-width: 72rem; margin: 0 auto 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.admin-controls, .admin-post-form fieldset, .admin-album-media fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.admin-post-form fieldset { display: grid; gap: .9rem; }
+.admin-post-form label, .admin-album-media label { display: grid; gap: .35rem; color: #334155; font-size: .85rem; font-weight: 600; }
+.admin-post-form input, .admin-post-form textarea, .admin-post-form select { width: 100%; border-radius: 4px; }
+.admin-post-form label.admin-checkbox { display: flex; align-items: center; gap: .6rem; }
+.admin-checkbox input { width: auto; }
+.admin-workspace-summary button, .admin-notice button, .admin-pagination button, .admin-album-media button { padding: .6rem .9rem; min-height: 44px; border: 1px solid #a5aebb; background: #f8fafc; color: #172334; border-radius: 4px; cursor: pointer; }
+.admin-post-form button:disabled, .admin-controls button:disabled, .admin-post-item button:disabled, .admin-album-media :disabled, .admin-pagination button:disabled { opacity: .5; cursor: not-allowed; }
+.admin-notice { max-width: 72rem; margin: 1rem auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-notice:empty { display: none; }
+.admin-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; margin-top: 1rem; }
+.admin-album-media { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #b7bfca; color: #334155; }
+.admin-album-media > p { font-size: .85rem; line-height: 1.6; }
+.admin-album-media fieldset { display: grid; gap: 1rem; }
+.admin-album-media input, .admin-album-media textarea { width: 100%; padding: .6rem; color: #172334; background: white; border: 1px solid #a5aebb; border-radius: 4px; }
+.admin-media-item { display: grid; gap: .7rem; background: #edf1f5; border: 1px solid #ccd4de; padding: 1rem; border-radius: 6px; }
+.admin-media-item__preview { height: 110px; background: #152133; display: grid; place-items: center; color: white; }
+.admin-media-item__preview img { height: 110px; max-width: 100%; object-fit: contain; }
+button.admin-danger { color: #a42121; border-color: #c78383; }
+.admin-album-media progress { width: 100%; margin-top: 1rem; }
+@media (max-width: 700px) {
+  .admin-workspace-summary, .admin-toolbar { align-items: stretch; flex-direction: column; }
+  .admin-grid { grid-template-columns: 1fr; }
+  .admin-toolbar__filters > input { width: 100%; }
+  .album-dialog__navigation button { padding: .6rem; }
+}
+
+.subpage-shell[data-page="admin"] .page-hero { padding-bottom: 2rem; }
+.subpage-shell[data-page="admin"] .page-hero h1 { font-size: clamp(2rem, 4vw, 3.25rem); max-width: none; }
+.subpage-shell[data-page="admin"] .page-section { padding-top: 1.75rem; }
+.subpage-shell[data-page="admin"] .admin-workspace-summary,
+.subpage-shell[data-page="admin"] .admin-notice,
+.subpage-shell[data-page="admin"] .admin-pagination,
+.subpage-shell[data-page="admin"] .admin-post-item h3 { color: #172334; }
+.subpage-shell[data-page="admin"] .admin-workspace-summary h2 { color: #172334; }
+.subpage-shell[data-page="admin"] .admin-toolbar input,
+.subpage-shell[data-page="admin"] .admin-toolbar select,
+.subpage-shell[data-page="admin"] .admin-form input,
+.subpage-shell[data-page="admin"] .admin-post-form input,
+.subpage-shell[data-page="admin"] .admin-post-form textarea,
+.subpage-shell[data-page="admin"] .admin-post-form select { color: #172334; background: #fffdf9; border-color: #8b96a4; }
+.subpage-shell[data-page="admin"] input::placeholder,
+.subpage-shell[data-page="admin"] textarea::placeholder { color: #657184; opacity: 1; }
+.subpage-shell[data-page="admin"] button.admin-danger { background: #fff4f3; color: #9c2020; border-color: #b95e5e; }
+.subpage-shell[data-page="admin"] button:focus-visible,
+.subpage-shell[data-page="admin"] input:focus-visible,
+.subpage-shell[data-page="admin"] textarea:focus-visible,
+.subpage-shell[data-page="admin"] select:focus-visible { outline: 3px solid #286da0; outline-offset: 2px; }
+.subpage-shell[data-page="admin"] .admin-grid .content-panel:hover { transform: none; }

@@ -1,3 +1,7 @@
+import { AdminAlbumMedia } from "./components/AdminAlbumMedia";
+import type { MediaDraft } from "./components/AdminAlbumMedia";
+import { Gallery } from "./components/Gallery";
+import metaByPage from "../shared/page-meta.json";
 import { animate, stagger } from "animejs";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -65,41 +69,6 @@ type ViewerImage = {
   details: string[];
 };
 
-type GalleryAlbum = {
-  id: number;
-  slug: string;
-  title: string;
-  excerpt: string;
-  coverImage?: string;
-  attachmentPath?: string;
-  attachmentThumbnailPath?: string;
-  galleryImages?: {
-    id: string;
-    src: string;
-    thumbnailSrc?: string;
-    caption: string;
-    alt: string;
-    order: number;
-  }[];
-  publishedAt: string;
-  isPublished: boolean;
-  status?: "draft" | "published";
-  createdAt: string;
-  updatedAt: string;
-};
-
-type GalleryAlbumResponse = {
-  items?: GalleryAlbum[];
-  pagination?: {
-    page: number;
-    limit: number;
-    totalItems: number;
-    totalPages: number;
-    hasPrevPage: boolean;
-    hasNextPage: boolean;
-  };
-};
-
 type MiniProject = {
   page: "ground-station" | "payload-development" | "adcs";
   eyebrow: string;
@@ -120,6 +89,7 @@ type NewsletterIssue = {
 };
 
 type CmsPost = {
+  version: number;
   id: number;
   slug: string;
   title: string;
@@ -1317,32 +1287,6 @@ function HomePage({
     items: ViewerImage[];
     index: number;
   } | null>(null);
-  const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbum[]>([]);
-  const [galleryLoading, setGalleryLoading] = useState(true);
-
-  const loadGalleryAlbums = async () => {
-    try {
-      const response = await fetch("/api/posts?category=gallery&includeDrafts=false&limit=50");
-      if (!response.ok) {
-        throw new Error("Failed to load gallery albums.");
-      }
-      const data = (await response.json()) as GalleryAlbumResponse;
-      const albums = (data.items ?? []).map((album) => ({
-        ...album,
-        galleryImages: album.galleryImages ?? [],
-        coverImage: album.coverImage ?? album.attachmentThumbnailPath ?? album.attachmentPath ?? "",
-      }));
-      setGalleryAlbums(albums);
-    } catch (error) {
-      console.error("Failed to load gallery:", error);
-    } finally {
-      setGalleryLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadGalleryAlbums();
-  }, []);
   const shellRef = useRef<HTMLDivElement | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
   const liveBlogPosts = posts
@@ -1720,70 +1664,7 @@ function HomePage({
               )}
             </div>
           </div>
-          <div className="gallery-section__intro" id="gallery">
-            <p className="mission-copy__eyebrow">Gallery</p>
-            <h2>The mission, in images.</h2>
-          </div>
-          <div className="gallery-grid">
-            {galleryLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="gallery-card database-feed__card--skeleton">
-                  <div className="database-feed__skeleton-line" style={{ height: "200px" }} />
-                  <div className="gallery-card__body">
-                    <div className="database-feed__skeleton-line" style={{ width: "60%", height: "1rem" }} />
-                    <div className="database-feed__skeleton-line" style={{ width: "80%", height: "0.875rem", marginTop: "0.5rem" }} />
-                  </div>
-                </div>
-              ))
-            ) : galleryAlbums.length > 0 ? (
-              galleryAlbums.map((album) => {
-                const albumImages: ViewerImage[] = [
-                  ...(album.attachmentPath ? [{
-                    title: album.title,
-                    caption: album.excerpt || "Album cover",
-                    src: album.attachmentPath,
-                    alt: album.title,
-                    details: album.galleryImages?.map((img) => img.caption) ?? [],
-                  }] : []),
-                  ...(album.galleryImages?.map((img, idx) => ({
-                    title: `${album.title} - Image ${idx + 1}`,
-                    caption: img.caption,
-                    src: img.src,
-                    alt: img.alt,
-                    details: [],
-                  })) ?? []),
-                ];
-                const coverSrc = album.coverImage || album.attachmentThumbnailPath || album.attachmentPath || "";
-                return (
-                  <button
-                    type="button"
-                    key={album.slug}
-                    className="gallery-card gallery-card__open"
-                    onClick={() => albumImages.length > 0 && setViewerState({
-                      title: album.title,
-                      items: albumImages,
-                      index: 0,
-                    })}
-                  >
-                    <div
-                      className="gallery-card__media"
-                      style={{ backgroundImage: coverSrc ? `url("${coverSrc}")` : "none" }}
-                    />
-                    <div className="gallery-card__body">
-                      <p>{album.title}</p>
-                      <span>{album.excerpt || `${albumImages.length} image${albumImages.length !== 1 ? "s" : ""}`}</span>
-                    </div>
-                  </button>
-                );
-              })
-            ) : (
-              <div className="gallery-card" style={{ gridColumn: "1 / -1", textAlign: "center", padding: "3rem" }}>
-                <p className="mission-copy__eyebrow">Gallery</p>
-                <h3>No albums yet.</h3>
-                <p className="content-copy">Create gallery albums from the Admin dashboard.</p>
-              </div>
-            )}
-          </div>
+          <Gallery />
         </section>
 
         {viewerState ? (
@@ -1820,7 +1701,7 @@ function StandardPage({
   useEffect(() => {
     const scope = pageRef.current;
     if (
-      !scope ||
+      !scope || page === "admin" ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       return;
@@ -1864,7 +1745,7 @@ function StandardPage({
   }, [page]);
 
   return (
-    <div className="subpage-shell" ref={pageRef}>
+    <div className="subpage-shell" data-page={page} ref={pageRef}>
       <SiteHeader
         progress={0.24}
         menuOpen={menuOpen}
@@ -2441,6 +2322,20 @@ function PostPage({
 }
 
 function AdminPage() {
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
+  const [mediaBusy, setMediaBusy] = useState(false);
+  const [mediaKey, setMediaKey] = useState(0);
+  const [mediaDirty, setMediaDirty] = useState(false);
+  const mediaDrafts = useRef<Record<string, MediaDraft>>({});
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [adminPage, setAdminPage] = useState(1);
+  const [pagination, setPagination] = useState({ totalItems: 0, totalPages: 0, page: 1 });
+  const [editingVersion, setEditingVersion] = useState(0);
+  const [existingAttachment, setExistingAttachment] = useState("");
+  const [removeAttachment, setRemoveAttachment] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(0);
+  const [recoverable, setRecoverable] = useState(() => Boolean(sessionStorage.getItem("antara-admin-draft")));
   const [token, setToken] = useState("");
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
@@ -2462,12 +2357,55 @@ function AdminPage() {
     excerpt: "",
     content: "",
     category: "blog",
-    status: "published",
+    status: "draft",
     publishedAt: "",
     seoTitle: "",
     seoDescription: "",
     coverImage: "",
   });
+
+  const [baseline, setBaseline] = useState(() => JSON.stringify(form));
+  const dirty = JSON.stringify(form) !== baseline || Boolean(attachmentFile) || removeAttachment;
+  const hasUnsaved = dirty || mediaDirty;
+  useEffect(() => {
+    if (dirty) {
+      try { sessionStorage.setItem("antara-admin-draft", JSON.stringify({ form, editingSlug, editingVersion })); }
+      catch { /* The in-memory draft still survives session expiry. */ }
+    }
+  }, [dirty, form, editingSlug, editingVersion]);
+  useEffect(() => {
+    if (!hasUnsaved && !busy && !mediaBusy) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    const navigation = (event: globalThis.MouseEvent) => {
+      const anchor = (event.target as HTMLElement).closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
+      if (busy || mediaBusy || !window.confirm("Leave this page with unsaved edits? Your text draft is kept in this tab; selected files must be chosen again.")) {
+        event.preventDefault(); event.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", navigation, true);
+    return () => { window.removeEventListener("beforeunload", beforeUnload); document.removeEventListener("click", navigation, true); };
+  }, [hasUnsaved, busy, mediaBusy]);
+  const canDiscard = () => !hasUnsaved || window.confirm("Discard unsaved entry edits, captions, and ordering?");
+  const runAction = async (action: () => Promise<void>) => {
+    if (busyRef.current || mediaBusy) return;
+    busyRef.current = true; setBusy(true);
+    try { await action(); } finally { busyRef.current = false; setBusy(false); }
+  };
+  const expireSession = () => {
+    window.localStorage.removeItem(ADMIN_TOKEN_KEY); setToken("");
+    setAuthStatus("Session expired. Sign in again to continue; your unsaved edits are retained.");
+  };
+  const requestAdmin = async (url: string, options: RequestInit = {}) => {
+    const response = await fetch(url, options);
+    if (response.status === 401) { expireSession(); throw new Error("Session expired. Sign in again; your edits are retained."); }
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || `Request failed (${response.status}). Please retry.`);
+    }
+    return response;
+  };
 
   const authHeaders = useMemo<Record<string, string>>(() => {
     const headers: Record<string, string> = {};
@@ -2482,20 +2420,24 @@ function AdminPage() {
   );
 
   const resetForm = () => {
-    setEditingSlug("");
+    setEditingSlug(""); setEditingVersion(0); setExistingAttachment(""); setRemoveAttachment(false);
+    setMediaDirty(false); mediaDrafts.current = {}; setMediaKey(value => value + 1);
+    setFileInputKey(value => value + 1);
+    sessionStorage.removeItem("antara-admin-draft"); setRecoverable(false);
     setAttachmentFile(null);
-    setForm({
+    const empty = {
       title: "",
       slug: "",
       excerpt: "",
       content: "",
       category: "blog",
-      status: "published",
+      status: "draft",
       publishedAt: "",
       seoTitle: "",
       seoDescription: "",
       coverImage: "",
-    });
+    };
+    setForm(empty); setBaseline(JSON.stringify(empty));
   };
 
   const adminRequestRef = useRef<AbortController | null>(null);
@@ -2512,16 +2454,17 @@ function AdminPage() {
     try {
       const query = new URLSearchParams({
         includeDrafts: "true",
-        page: "1",
-        limit: "100",
+        page: String(adminPage),
+        limit: "20",
       });
+      if (categoryFilter) query.set("category", categoryFilter);
       if (search.trim()) {
         query.set("search", search.trim());
       }
       if (statusFilter !== "all") {
         query.set("status", statusFilter);
       }
-      const response = await fetch(`/api/posts?${query.toString()}`, {
+      const response = await requestAdmin(`/api/posts?${query.toString()}`, {
         headers: authHeaders,
         signal: controller.signal,
       });
@@ -2537,6 +2480,7 @@ function AdminPage() {
       const data = (await response.json()) as PaginatedPostsResponse;
       if (controller.signal.aborted) return;
       setPosts(data.items ?? []);
+      if (data.pagination) setPagination(data.pagination);
     } catch (error) {
       if (controller.signal.aborted) return;
       setPostsError(
@@ -2558,10 +2502,10 @@ function AdminPage() {
     if (!token) {
       return;
     }
-    loadAdminPosts();
-    return () => adminRequestRef.current?.abort();
+    const timer = window.setTimeout(() => void loadAdminPosts(), 250);
+    return () => { window.clearTimeout(timer); adminRequestRef.current?.abort(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, search, statusFilter]);
+  }, [token, search, statusFilter, categoryFilter, adminPage]);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -2588,6 +2532,7 @@ function AdminPage() {
   };
 
   const handleLogout = () => {
+    if (busy || mediaBusy || !canDiscard()) return;
     window.localStorage.removeItem(ADMIN_TOKEN_KEY);
     setToken("");
     setPosts([]);
@@ -2596,8 +2541,9 @@ function AdminPage() {
   };
 
   const handleEdit = async (slug: string) => {
+    if (!canDiscard()) return;
     try {
-      const response = await fetch(
+      const response = await requestAdmin(
         `/api/posts/${encodeURIComponent(slug)}?includeDraft=true`,
         {
           headers: authHeaders,
@@ -2613,9 +2559,11 @@ function AdminPage() {
       if (!post) {
         throw new Error("Post not found.");
       }
-      setEditingSlug(slug);
+      setEditingSlug(slug); setEditingVersion(post.version); setExistingAttachment(post.attachmentPath || ""); setRemoveAttachment(false);
+      setMediaDirty(false); mediaDrafts.current = {}; setMediaKey(value => value + 1); setFileInputKey(value => value + 1);
+      sessionStorage.removeItem("antara-admin-draft"); setRecoverable(false);
       setAttachmentFile(null);
-      setForm({
+      const nextForm = {
         title: post.title ?? "",
         slug: post.slug ?? "",
         excerpt: post.excerpt ?? "",
@@ -2626,12 +2574,13 @@ function AdminPage() {
             ? "draft"
             : "published",
         publishedAt: post.publishedAt
-          ? new Date(post.publishedAt).toISOString().slice(0, 16)
+          ? new Date(new Date(post.publishedAt).getTime() - new Date(post.publishedAt).getTimezoneOffset() * 60000).toISOString().slice(0, 16)
           : "",
         seoTitle: post.seoTitle ?? "",
         seoDescription: post.seoDescription ?? "",
         coverImage: post.coverImage ?? "",
-      });
+      };
+      setForm(nextForm); setBaseline(JSON.stringify(nextForm));
       setAuthStatus(`Editing ${post.slug}`);
     } catch (error) {
       setAuthStatus(
@@ -2640,15 +2589,17 @@ function AdminPage() {
     }
   };
 
-  const handleDelete = async (slug: string) => {
-    const confirmed = window.confirm(`Delete post "${slug}"?`);
+  const handleDelete = async (post: CmsPost) => {
+    const slug = post.slug;
+    if (editingSlug === slug && !canDiscard()) return;
+    const confirmed = window.confirm(`Permanently delete "${post.title}"${post.category === "gallery" ? " and all its photos/videos" : " and its attachment"}? This cannot be undone.`);
     if (!confirmed) {
       return;
     }
     try {
-      const response = await fetch(`/api/posts/${encodeURIComponent(slug)}`, {
+      const response = await requestAdmin(`/api/posts/${encodeURIComponent(slug)}`, {
         method: "DELETE",
-        headers: authHeaders,
+        headers: { ...authHeaders, "If-Match": String(post.version) },
       });
       if (!response.ok) {
         throw new Error("Delete failed.");
@@ -2664,12 +2615,14 @@ function AdminPage() {
   };
 
   const handleStatusToggle = async (post: CmsPost) => {
+    if (editingSlug === post.slug) { setAuthStatus("Use the status field in the open editor and save your changes."); return; }
     const nextStatus =
       post.status === "draft" || post.isPublished === false
         ? "published"
         : "draft";
     try {
-      const response = await fetch(
+      if (!window.confirm(`${nextStatus === "published" ? "Publish" : "Unpublish"} "${post.title}"?`)) return;
+      const response = await requestAdmin(
         `/api/posts/${encodeURIComponent(post.slug)}`,
         {
           method: "PUT",
@@ -2677,6 +2630,7 @@ function AdminPage() {
           body: (() => {
             const formData = new FormData();
             formData.set("status", nextStatus);
+            formData.set("expectedVersion", String(post.version));
             return formData;
           })(),
         },
@@ -2696,7 +2650,7 @@ function AdminPage() {
   const handleRunBackup = async () => {
     setBackupStatus("Running backup...");
     try {
-      const response = await fetch("/api/admin/backups/run", {
+      const response = await requestAdmin("/api/admin/backups/run", {
         method: "POST",
         headers: authHeaders,
       });
@@ -2708,7 +2662,7 @@ function AdminPage() {
         postCount?: number;
       };
       setBackupStatus(
-        `Backup completed (${data.postCount ?? 0} posts). ${data.backupPath ?? ""}`.trim(),
+        `Backup completed (${data.postCount ?? 0} posts, including album metadata).`,
       );
     } catch (error) {
       setBackupStatus(
@@ -2724,7 +2678,11 @@ function AdminPage() {
       return;
     }
 
+    if (mediaDirty) { setAuthStatus("Save captions and ordering before saving the entry."); return; }
+    if (form.status === "published" && !window.confirm("Save and publish these changes? They will be visible to everyone immediately.")) return;
     const payload = new FormData();
+    if (editingSlug) payload.set("expectedVersion", String(editingVersion));
+    if (removeAttachment) payload.set("removeAttachment", "true");
     payload.set("title", form.title);
     if (form.slug.trim()) {
       payload.set("slug", form.slug.trim());
@@ -2750,7 +2708,7 @@ function AdminPage() {
         : "/api/posts";
       const method = editing ? "PUT" : "POST";
 
-      const response = await fetch(endpoint, {
+      const response = await requestAdmin(endpoint, {
         method,
         headers: authHeaders,
         body: payload,
@@ -2769,7 +2727,15 @@ function AdminPage() {
           ? `Updated ${data.slug ?? editingSlug}`
           : `Created ${data.slug ?? "post"}`,
       );
+      const savedSlug = data.slug || editingSlug;
       resetForm();
+      if (form.category === "gallery" && savedSlug) {
+        const response = await requestAdmin(`/api/posts/${encodeURIComponent(savedSlug)}?includeDraft=true`, { headers: authHeaders });
+        const saved = (await response.json()).item as CmsPostDetail;
+        const savedForm = { ...form, slug: savedSlug };
+        setForm(savedForm); setBaseline(JSON.stringify(savedForm)); setEditingSlug(savedSlug); setEditingVersion(saved.version);
+        setExistingAttachment(saved.attachmentPath || "");
+      }
       loadAdminPosts();
     } catch (error) {
       setAuthStatus(error instanceof Error ? error.message : "Save failed.");
@@ -2781,7 +2747,7 @@ function AdminPage() {
       page="admin"
       eyebrow="Admin"
       title="Antara Content Dashboard"
-      intro="Manage mission posts, newsletter entries, and published content. Authenticated access only."
+      intro="Publish mission updates, curate albums, and manage the archive."
     >
       {!token ? (
         <section className="page-section">
@@ -2789,22 +2755,22 @@ function AdminPage() {
             <article className="content-panel content-panel--accent">
               <p className="panel-eyebrow">Restricted Access</p>
               <h2>Sign in to continue.</h2>
-              <form className="admin-form" onSubmit={handleLogin}>
+              <form className="admin-form" onSubmit={event => { event.preventDefault(); void runAction(() => handleLogin(event)); }}>
                 <input
                   type="text"
-                  placeholder="Username"
+                  aria-label="Username" required placeholder="Username"
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
                   autoComplete="username"
                 />
                 <input
                   type="password"
-                  placeholder="Password"
+                  aria-label="Password" required placeholder="Password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   autoComplete="current-password"
                 />
-                <button type="submit">Login</button>
+                <button type="submit" disabled={busy}>{busy ? "Signing in…" : "Login"}</button>
               </form>
               <p className="content-copy">
                 {authStatus || "Only authenticated team members can manage content."}
@@ -2814,7 +2780,7 @@ function AdminPage() {
               <p className="panel-eyebrow">What you can do here</p>
               <h2>Full content management.</h2>
               <ul className="content-list">
-                <li>Create posts in draft or published state, with categories and scheduling.</li>
+                <li>Create posts in draft or published state, with categories and publication dates.</li>
                 <li>Edit content, SEO fields, cover images, and file attachments.</li>
                 <li>Toggle publish status, delete outdated entries, and run database backups.</li>
               </ul>
@@ -2823,30 +2789,36 @@ function AdminPage() {
         </section>
       ) : (
         <section className="page-section">
+          <div className="admin-workspace-summary"><div><p className="panel-eyebrow">Workspace</p><h2>Content & albums</h2><p>{pagination.totalItems} matching entries · {hasUnsaved ? "Unsaved changes" : "All edits saved"}</p></div>
+            <div className="admin-post-form__actions"><button disabled={busy || mediaBusy} onClick={() => { if (canDiscard()) resetForm(); }}>New post</button><button disabled={busy || mediaBusy} onClick={() => { if (!canDiscard()) return; resetForm(); const next = { title: "", slug: "", excerpt: "", content: "", category: "gallery", status: "draft", publishedAt: "", seoTitle: "", seoDescription: "", coverImage: "" }; setForm(next); setBaseline(JSON.stringify(next)); }}>New album</button></div>
+          </div>
+          {recoverable && <div className="admin-notice" role="status">A text draft from this tab is available. Files must be selected again. <button disabled={busy || mediaBusy} onClick={() => {
+            if (!canDiscard()) return;
+            try { const saved = JSON.parse(sessionStorage.getItem("antara-admin-draft") || "null"); if (saved?.form) { setForm(saved.form); setEditingSlug(saved.editingSlug || ""); setEditingVersion(saved.editingVersion || 0); setBaseline(""); setAuthStatus("Draft restored. If this entry has changed on the server, saving will ask you to reload it."); } } catch { setAuthStatus("The saved draft could not be restored."); }
+            setRecoverable(false);
+          }}>Restore draft</button><button onClick={() => { sessionStorage.removeItem("antara-admin-draft"); setRecoverable(false); }}>Dismiss</button></div>}
+          <fieldset className="admin-controls" disabled={busy || mediaBusy}>
           <div className="admin-toolbar">
             <div className="admin-toolbar__filters">
               <input
                 type="search"
                 placeholder="Search posts..."
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                aria-label="Search posts" onChange={(event) => { setSearch(event.target.value); setAdminPage(1); }}
               />
               <select
-                value={statusFilter}
-                onChange={(event) =>
-                  setStatusFilter(
-                    event.target.value as "all" | "published" | "draft",
-                  )
-                }
+                aria-label="Publication status filter" value={statusFilter}
+                onChange={(event) => { setStatusFilter(event.target.value as "all" | "published" | "draft"); setAdminPage(1); }}
               >
                 <option value="all">All</option>
                 <option value="published">Published</option>
                 <option value="draft">Draft</option>
               </select>
+              <select aria-label="Category filter" value={categoryFilter} onChange={event => { setCategoryFilter(event.target.value); setAdminPage(1); }}><option value="">All categories</option><option value="blog">Blog</option><option value="newsletter">Newsletter</option><option value="gallery">Albums</option></select>
               <button type="button" onClick={loadAdminPosts}>
                 Refresh
               </button>
-              <button type="button" onClick={handleRunBackup}>
+              <button type="button" onClick={() => void runAction(handleRunBackup)}>
                 Run Backup
               </button>
             </div>
@@ -2858,6 +2830,8 @@ function AdminPage() {
               Logout
             </button>
           </div>
+          </fieldset>
+          <p role="status" className="admin-notice">{authStatus}</p>
           {backupStatus ? (
             <p className="content-copy admin-backup-status">{backupStatus}</p>
           ) : null}
@@ -2865,21 +2839,22 @@ function AdminPage() {
           <div className="admin-grid">
             <article className="content-panel">
               <p className="panel-eyebrow">
-                {editingSlug ? "Edit Post" : "Create Post"}
+                {form.category === "gallery" ? "Album details" : editingSlug ? "Edit Post" : "Create Post"}
               </p>
-              <h2>{editingSlug ? `Editing ${editingSlug}` : "New Post"}</h2>
-              <form className="admin-post-form" onSubmit={handleSave}>
-                <input
+              <h2>{editingSlug ? `Editing ${editingSlug}` : form.category === "gallery" ? "New album" : "New post"}</h2>
+              <form className="admin-post-form" onSubmit={event => { event.preventDefault(); void runAction(() => handleSave(event)); }}>
+                <fieldset disabled={busy || mediaBusy}>
+                <label>Title<input
                   type="text"
                   placeholder="Title *"
                   value={form.title}
                   onChange={(event) =>
                     setForm((prev) => ({ ...prev, title: event.target.value }))
                   }
-                  required
-                />
-                <input
-                  type="text"
+                  required maxLength={280}
+                /></label>
+                <label>URL slug<input
+                  type="text" pattern="[a-z0-9-]+" maxLength={160}
                   placeholder="Slug (lowercase-hyphen-format)"
                   value={form.slug}
                   onChange={(event) =>
@@ -2888,19 +2863,19 @@ function AdminPage() {
                       slug: event.target.value.toLowerCase(),
                     }))
                   }
-                />
-                <input
-                  type="text"
+                /></label>
+                <label>Category (gallery for albums)<input
+                  type="text" list="admin-categories"
                   placeholder="Category"
-                  value={form.category}
+                  disabled={Boolean(editingSlug) && form.category === "gallery"} value={form.category}
                   onChange={(event) =>
                     setForm((prev) => ({
                       ...prev,
                       category: event.target.value,
                     }))
                   }
-                />
-                <select
+                /></label>
+                <label>Visibility<select
                   value={form.status}
                   onChange={(event) =>
                     setForm((prev) => ({ ...prev, status: event.target.value }))
@@ -2908,8 +2883,8 @@ function AdminPage() {
                 >
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
-                </select>
-                <input
+                </select></label>
+                <label>Publication date (your local time; does not schedule publishing)<input
                   type="datetime-local"
                   value={form.publishedAt}
                   onChange={(event) =>
@@ -2918,8 +2893,8 @@ function AdminPage() {
                       publishedAt: event.target.value,
                     }))
                   }
-                />
-                <textarea
+                /></label>
+                <label>Summary<textarea
                   placeholder="Excerpt"
                   value={form.excerpt}
                   onChange={(event) =>
@@ -2928,8 +2903,8 @@ function AdminPage() {
                       excerpt: event.target.value,
                     }))
                   }
-                />
-                <textarea
+                /></label>
+                <label>Content (Markdown supported)<textarea
                   placeholder="Content"
                   value={form.content}
                   onChange={(event) =>
@@ -2939,8 +2914,8 @@ function AdminPage() {
                     }))
                   }
                   rows={10}
-                />
-                <input
+                /></label>
+                <label>Search & share title<input
                   type="text"
                   placeholder="SEO Title"
                   value={form.seoTitle}
@@ -2950,8 +2925,8 @@ function AdminPage() {
                       seoTitle: event.target.value,
                     }))
                   }
-                />
-                <textarea
+                /></label>
+                <label>Search & share description<textarea
                   placeholder="SEO Description"
                   value={form.seoDescription}
                   onChange={(event) =>
@@ -2960,10 +2935,10 @@ function AdminPage() {
                       seoDescription: event.target.value,
                     }))
                   }
-                />
-                <input
-                  type="url"
-                  placeholder="Cover Image URL"
+                /></label>
+                <label>Cover image URL<input
+                  type="text"
+                  placeholder="https://… or /uploads/…"
                   value={form.coverImage}
                   onChange={(event) =>
                     setForm((prev) => ({
@@ -2971,19 +2946,22 @@ function AdminPage() {
                       coverImage: event.target.value,
                     }))
                   }
-                />
-                <input
+                /></label>
+                <datalist id="admin-categories"><option value="blog" /><option value="newsletter" /><option value="gallery" /></datalist>
+                {existingAttachment && <a href={existingAttachment} target="_blank" rel="noreferrer">Open current attachment ↗</a>}
+                {existingAttachment && <label className="admin-checkbox"><input type="checkbox" checked={removeAttachment} onChange={event => setRemoveAttachment(event.target.checked)} />Remove existing attachment</label>}
+                <label>Attachment (JPEG, PNG, WebP, or PDF)<input key={fileInputKey}
                   type="file"
                   accept=".jpg,.jpeg,.png,.webp,.pdf"
                   onChange={(event) =>
                     setAttachmentFile(event.target.files?.[0] ?? null)
                   }
-                />
+                /></label>
                 <div className="admin-post-form__actions">
-                  <button type="submit">
-                    {editingSlug ? "Save Changes" : "Create Post"}
+                  <button type="submit" disabled={mediaDirty}>
+                    {busy ? "Saving…" : editingSlug ? "Save changes" : form.category === "gallery" ? "Create album" : "Create post"}
                   </button>
-                  <button type="button" onClick={resetForm}>
+                  <button type="button" onClick={() => { if (canDiscard()) resetForm(); }}>
                     Clear
                   </button>
                   <button
@@ -2993,7 +2971,10 @@ function AdminPage() {
                     {showPreview ? "Hide Preview" : "Show Preview"}
                   </button>
                 </div>
+                </fieldset>
+                <p className="admin-notice" role="status">{authStatus}</p>
               </form>
+              {form.category === "gallery" && (editingSlug ? <AdminAlbumMedia disabled={busy} key={`${editingSlug}-${mediaKey}`} slug={editingSlug} token={token} draft={mediaDrafts.current[editingSlug]} onDraft={draft => { mediaDrafts.current[editingSlug] = draft; setMediaDirty(draft.dirty); }} onBusy={setMediaBusy} onCover={url => setForm(previous => ({ ...previous, coverImage: url }))} onExpired={expireSession} /> : <p className="admin-notice">Save this album as a draft first, then add photos and videos.</p>)}
               {showPreview ? (
                 <div className="admin-markdown-preview">
                   <p className="panel-eyebrow">Markdown Preview</p>
@@ -3028,7 +3009,7 @@ function AdminPage() {
                     <article key={post.id} className="admin-post-item">
                       <div>
                         <p>{new Date(post.publishedAt).toLocaleDateString()}</p>
-                        <h3>{post.title}</h3>
+                        <h3>{post.title}</h3><p>{post.category === "gallery" ? "Album" : post.category}</p>
                         <span>
                           {post.status ||
                             (post.isPublished ? "published" : "draft")}
@@ -3037,19 +3018,19 @@ function AdminPage() {
                       <div className="admin-post-item__actions">
                         <button
                           type="button"
-                          onClick={() => handleEdit(post.slug)}
+                          disabled={busy || mediaBusy} onClick={() => void runAction(() => handleEdit(post.slug))}
                         >
                           Edit
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleStatusToggle(post)}
+                          disabled={busy || mediaBusy || editingSlug === post.slug} onClick={() => void runAction(() => handleStatusToggle(post))}
                         >
-                          Toggle Status
+                          {post.isPublished ? "Unpublish" : "Publish"}
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(post.slug)}
+                          className="admin-danger" disabled={busy || mediaBusy} onClick={() => void runAction(() => handleDelete(post))}
                         >
                           Delete
                         </button>
@@ -3062,6 +3043,7 @@ function AdminPage() {
                   </p>
                 )}
               </div>
+              <nav className="admin-pagination" aria-label="Content pages"><button disabled={loadingPosts || busy || pagination.page <= 1} onClick={() => setAdminPage(pagination.page - 1)}>Previous</button><span>Page {pagination.page} of {Math.max(1, pagination.totalPages)}</span><button disabled={loadingPosts || busy || pagination.page >= pagination.totalPages} onClick={() => setAdminPage(pagination.page + 1)}>Next</button></nav>
             </article>
           </div>
         </section>
@@ -3209,56 +3191,7 @@ export default function App() {
   }, [page, postSlug]);
 
   useEffect(() => {
-    const metaByPage: Record<
-      Exclude<PageId, "post">,
-      { title: string; description: string }
-    > = {
-      home: {
-        title: "Project Antara - Student-Built CubeSat Mission, BITS Goa",
-        description:
-          "Project Antara is a BITS Goa student-built CubeSat studying radiation in Low Earth Orbit, with a focus on the South Atlantic Anomaly. Under-Grad students. One satellite.",
-      },
-      partners: {
-        title: "Partners - Project Antara",
-        description:
-          "Support Project Antara through sponsorship, hardware, technical collaboration, or mentorship. Help a student satellite reach orbit.",
-      },
-      events: {
-        title: "Events - Project Antara",
-        description:
-          "The public timeline of Antara milestones, subsystem reviews, workshops, partner sessions, and launch preparation.",
-      },
-      "mini-projects": {
-        title: "Mini-Projects - Project Antara",
-        description:
-          "Three student-owned engineering tracks, Ground Station, Payload Development, and ADCS, that feed directly into the Antara spacecraft.",
-      },
-      "ground-station": {
-        title: "Ground Station Mini-Project - Project Antara",
-        description:
-          "Build the communications and operations layer that connects Antara to the team on the ground. Tracking, telemetry, and student-run mission ops.",
-      },
-      "payload-development": {
-        title: "Payload Development Mini-Project - Project Antara",
-        description:
-          "Design the detector stack, make shielding decisions, and build the pipeline from raw measurements to usable science data.",
-      },
-      adcs: {
-        title: "Attitude Control and Determination - Project Antara",
-        description:
-          "Sensors, actuators, control logic, and simulation for a CubeSat that knows where it's pointing and can correct itself when it doesn't.",
-      },
-      newsletter: {
-        title: "Newsletter - Project Antara",
-        description:
-          "Monthly mission updates from the team. Honest progress notes, subsystem milestones, and the occasional hard lesson.",
-      },
-      admin: {
-        title: "Admin Dashboard - Project Antara",
-        description:
-          "Authenticated content management dashboard for the Antara mission team.",
-      },
-    };
+
 
     const upsertMeta = (name: string, content: string, property = false) => {
       const selector = property
@@ -3275,6 +3208,18 @@ export default function App() {
         document.head.appendChild(tag);
       }
       tag.setAttribute("content", content);
+    };
+
+    const setSocialImage = (cover?: string | null) => {
+      let image = new URL("/social-preview.png", window.location.origin).href;
+      try {
+        const candidate = new URL(cover || image, window.location.origin);
+        if (["https:", "http:"].includes(candidate.protocol)) image = candidate.href;
+      } catch { /* Use the branded fallback for invalid cover URLs. */ }
+      upsertMeta("og:image", image, true);
+      upsertMeta("twitter:image", image);
+      upsertMeta("og:image:alt", "Project Antara — BITS Goa CubeSat mission", true);
+      upsertMeta("twitter:image:alt", "Project Antara — BITS Goa CubeSat mission");
     };
 
     const removeMeta = (name: string, property = false) => {
@@ -3342,11 +3287,9 @@ export default function App() {
       upsertMeta("og:url", postUrl, true);
       upsertCanonical(postUrl);
 
-      if (postDetail?.coverImage) {
-        upsertMeta("og:image", postDetail.coverImage, true);
-      } else {
-        removeMeta("og:image", true);
-      }
+      setSocialImage(postDetail?.coverImage);
+      upsertMeta("twitter:title", postTitle);
+      upsertMeta("twitter:description", postDescription);
 
       if (postDetail?.publishedAt) {
         upsertMeta("article:published_time", postDetail.publishedAt, true);
@@ -3376,12 +3319,14 @@ export default function App() {
       return;
     }
 
-    removeMeta("og:image", true);
+    setSocialImage();
     removeMeta("article:published_time", true);
     removeJsonLd();
 
     const pageMeta = metaByPage[page];
     document.title = pageMeta.title;
+    upsertMeta("twitter:title", pageMeta.title);
+    upsertMeta("twitter:description", pageMeta.description);
     upsertMeta("description", pageMeta.description);
     upsertMeta("og:title", pageMeta.title, true);
     upsertMeta("og:description", pageMeta.description, true);
