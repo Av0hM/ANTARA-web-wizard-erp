@@ -1475,7 +1475,6 @@ function HomePage({
       <VideoScrubber
         src={journeyVideo}
         containerSelector="#journey"
-        poster="/journey-poster.webp"
       />
       <SiteHeader
         progress={progress}
